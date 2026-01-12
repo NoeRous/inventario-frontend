@@ -1,0 +1,114 @@
+<div class="p-2 card">
+  <!-- Título -->
+  <h2 class="text-xl font-semibold mb-2">Productos</h2>
+
+  <p-table
+    #dt
+    [value]="productList"
+    dataKey="id"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [paginator]="true"
+    [loading]="loading"
+    [globalFilterFields]="['name', 'category.name', 'inventoryState']"
+  
+    size="small"
+  >
+    <!-- Buscador global -->
+    <ng-template #caption>
+            <div class="flex">
+                <p-iconfield iconPosition="left" class="ml-auto">
+                    <p-inputicon>
+                        <i class="pi pi-search"></i>
+                    </p-inputicon>
+                    <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search keyword" />
+                </p-iconfield>
+            </div>
+        </ng-template>
+
+    <!-- HEADER -->
+    <ng-template #header>
+      <tr class="text-sm">
+        <th >Img</th>
+        <th >Nombre</th>
+        <th >Categoría</th>
+        <th >Estado</th>
+        <th >Precio</th>
+        <th >Acciones</th>
+      </tr>
+      <tr class="text-xs">
+        <th></th>
+        <th>
+          <p-columnFilter type="text" field="name" placeholder="Buscar nombre" filterOn="input"></p-columnFilter>
+        </th>
+        <th>
+          <p-columnFilter type="text" field="category.name" placeholder="Buscar categoría"></p-columnFilter>
+        </th>
+        <th>
+          <p-columnFilter field="inventoryState" matchMode="equals" [showMenu]="false">
+            <ng-template #filter let-value let-filter="filterCallback">
+              <p-select
+                [options]="inventoryStates"
+                placeholder="Estado"
+                (onChange)="filter($any($event).value)"
+                [style]="{ 'font-size': '0.8rem', padding: '0.1rem' }"
+              ></p-select>
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th>
+          <p-columnFilter type="numeric" field="price" placeholder="Precio"></p-columnFilter>
+        </th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <!-- BODY -->
+    <ng-template #body let-product>
+      <tr class="text-sm">
+        <!-- Imagen -->
+        <td class="text-center">
+          <img
+            [src]="getImageUrl(product.image)"
+            [alt]="product.name"
+            class="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded"
+          />
+        </td>
+
+        <!-- Nombre -->
+        <td>{{ product.name }}</td>
+
+        <!-- Categoría -->
+        <td>{{ product.category.name }}</td>
+
+        <!-- Estado -->
+        <td>
+          <p-tag [value]="product.inventoryState" [severity]="getSeverity(product.inventoryState)" class="text-xs py-1 px-2"></p-tag>
+        </td>
+
+        <!-- Precio -->
+        <td>{{ product.price | currency:'Bs. ' }}</td>
+
+        <!-- Acciones -->
+        <td class="flex gap-1 flex-wrap">
+          <button
+            pButton
+            icon="pi pi-shopping-cart"
+            label=""
+            [disabled]="product.inventoryState === 'AGOTADO'"
+            class="p-button-sm"
+            [style]="{ 'min-width': '2rem' }"
+          ></button>
+          <button pButton icon="pi pi-heart" outlined class="p-button-sm" [style]="{ 'min-width': '2rem' }"></button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- EMPTY -->
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="text-center text-sm">No se encontraron productos.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

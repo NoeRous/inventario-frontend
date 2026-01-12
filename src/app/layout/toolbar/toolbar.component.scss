@@ -1,0 +1,39 @@
+@use '../../../styles/variables' as v;
+
+.toolbar {
+  height: v.$toolbar-height;
+  background-color: v.$primary;
+  color: v.$text-dark;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: v.$shadow-soft;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: v.$text-dark;
+}
+
+.menu-btn {
+  display: none;
+  font-size: 22px;
+  margin-right: 16px;
+  background: none;
+  border: none;
+  color: v.$text-dark;
+  cursor: pointer;
+  transition: v.$transition;
+
+  &:hover {
+    color: v.$text-accent;
+  }
+}
+
+/* 📱 Mostrar botón en móvil */
+@media (max-width: 768px) {
+  .menu-btn {
+    display: block;
+  }
+}

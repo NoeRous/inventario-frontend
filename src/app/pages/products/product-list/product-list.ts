@@ -65,4 +65,26 @@ export class ProductList implements OnInit {
     const url = `${environment.apiUrl}${imagePath}`;
     return url;
   }
+
+  onFileSelected(event: Event, product: Product) {
+  const input = event.target as HTMLInputElement;
+  if (!input.files?.length) return;
+
+  const file = input.files[0];
+
+  // Crear FormData para enviar al backend
+  const formData = new FormData();
+  formData.append('image', file);
+
+  // Llamada al servicio que actualiza la imagen
+  this.productService.uploadProductImage(product.id, formData).subscribe({
+    next: (updatedProduct) => {
+      this.getProductsAll();
+    },
+    error: (err) => {
+      console.error('Error subiendo imagen', err);
+    }
+  });
+}
+
 }

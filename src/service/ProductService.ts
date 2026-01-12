@@ -20,6 +20,14 @@ export class ProductService {
         return this.http.post<Product>(this.apiUrl, product);
     }
 
+    uploadProductImage(productId: string, formData: FormData) {
+    return this.http.post<Product>(
+        `${this.apiUrl}/upload/${productId}/image`, // backend endpoint
+        formData
+    );
+}
+
+
    /* getProductsMini() {
         return Promise.resolve(this.getProductsData().slice(0, 5));
     }

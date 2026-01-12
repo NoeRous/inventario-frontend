@@ -6,8 +6,8 @@
     #dt
     [value]="productList"
     dataKey="id"
-    [rows]="10"
-    [rowsPerPageOptions]="[10, 25, 50]"
+    [rows]="3"
+    [rowsPerPageOptions]="[3,5,10, 25, 50]"
     [paginator]="true"
     [loading]="loading"
     [globalFilterFields]="['name', 'category.name', 'inventoryState']"
@@ -33,9 +33,10 @@
         <th >Categoría</th>
         <th >Estado</th>
         <th >Precio</th>
+        <th >Stock</th>
         <th >Acciones</th>
       </tr>
-      <tr class="text-xs">
+      <tr class="text-xxs">
         <th></th>
         <th>
           <p-columnFilter type="text" field="name" placeholder="Buscar nombre" filterOn="input"></p-columnFilter>
@@ -57,6 +58,9 @@
         </th>
         <th>
           <p-columnFilter type="numeric" field="price" placeholder="Precio"></p-columnFilter>
+        </th>
+        <th>
+          <p-columnFilter type="numeric" field="stock" placeholder="Stock"></p-columnFilter>
         </th>
         <th></th>
       </tr>
@@ -87,6 +91,8 @@
 
         <!-- Precio -->
         <td>{{ product.price | currency:'Bs. ' }}</td>
+        <!-- Precio -->
+        <td>{{ product.stock }}</td>
 
         <!-- Acciones -->
          <!-- Acciones -->

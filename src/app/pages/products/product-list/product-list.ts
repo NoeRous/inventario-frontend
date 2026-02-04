@@ -42,6 +42,7 @@ export class ProductList implements OnInit {
   constructor(private productService: ProductService, private fb: FormBuilder) {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
+      description: ['', Validators.required],
       categoryId: ['', Validators.required],
       category: [null, Validators.required],
       price: [0, Validators.required],
@@ -105,6 +106,7 @@ export class ProductList implements OnInit {
     this.selectedProduct = product;
     this.productForm.patchValue({
       name: product.name,
+      description: product.description,
       categoryId: product.category.id,
       category: product.category,
       price: product.price,

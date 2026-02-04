@@ -32,7 +32,11 @@
         <td class="text-center">
           <img [src]="getImageUrl(product.image)" [alt]="product.name" class="w-20 h-20 object-cover rounded-md mx-auto" />
         </td>
-        <td class="font-medium truncate max-w-xs">{{ product.name }}</td>
+        <td class="font-medium truncate max-w-xs">
+          {{ product.name }}
+          <br>
+          <small>  {{ product.description }}</small>
+        </td>
         <td class="truncate max-w-xs">{{ product.category.name }}</td>
         <td><p-tag [value]="product.inventoryState" [severity]="getSeverity(product.inventoryState)" class="text-xs py-1 px-2"></p-tag></td>
         <td>{{ product.price | currency:'Bs. ' }}</td>
@@ -70,6 +74,16 @@
         <small class="text-red-500"
           *ngIf="submitted && productForm.get('name')?.invalid">
           El nombre es requerido
+        </small>
+      </div>
+      
+      <!-- Descripción -->
+      <div>
+        <label class="block font-bold mb-3">Descripción</label>
+        <input pInputText formControlName="description" fluid />
+        <small class="text-red-500"
+          *ngIf="submitted && productForm.get('description')?.invalid">
+          La descripción es requerida
         </small>
       </div>
 

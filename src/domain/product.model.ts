@@ -10,4 +10,8 @@ export interface Product {
   image: string;
   rating: number;
   inventoryState: InventoryState;
+  category: {
+    id: string;
+    name: string;
+  };
 }

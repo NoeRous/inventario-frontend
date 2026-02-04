@@ -1,91 +1,167 @@
-import { afterNextRender, Component, NO_ERRORS_SCHEMA, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../../../service/ProductService';
 import { Product } from '../../../../domain/product.model';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { environment } from '../../../../environments/environment.prod';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TagModule } from 'primeng/tag';
+import { environment } from '../../../../environments/environment.prod';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   standalone: true,
   selector: 'app-product-list',
-  imports: [CommonModule, FormsModule, TableModule, ButtonModule, TagModule, InputTextModule, SelectModule,IconFieldModule,InputIconModule,MultiSelectModule],
-  
+  imports: [CommonModule, ReactiveFormsModule, TableModule, ButtonModule, DialogModule, InputTextModule, SelectModule, InputNumberModule, TagModule],
   templateUrl: './product-list.html',
-  styleUrl: './product-list.scss'
+  styleUrls: ['./product-list.scss']
 })
 export class ProductList implements OnInit {
   products = signal<Product[]>([]);
   loading = false;
 
-  inventoryStates = ['DISPONIBLE', 'BAJO_STOCK', 'AGOTADO'];
+  inventoryStates = [
+    { label: 'DISPONIBLE', value: 'DISPONIBLE' },
+    { label: 'BAJO_STOCK', value: 'BAJO_STOCK' },
+    { label: 'AGOTADO', value: 'AGOTADO' }
+  ];
 
-  constructor(private productService: ProductService) {}
+  categories: { id: string; name: string }[] = [];
+
+  productForm: FormGroup;
+  isEditMode = false;
+  selectedProduct: Product | null = null;
+
+  productDialog = false; // controla visibilidad del dialog
+  submitted = false;
+
+  constructor(private productService: ProductService, private fb: FormBuilder) {
+    this.productForm = this.fb.group({
+      name: ['', Validators.required],
+      categoryId: ['', Validators.required],
+      category: [null, Validators.required],
+      price: [0, Validators.required],
+      stock: [0, Validators.required],
+      inventoryState: ['DISPONIBLE', Validators.required],
+      image: [null]
+    });
+  }
 
   ngOnInit() {
     this.getProductsAll();
-  
+    this.getCategories();
   }
 
   get productList(): Product[] {
     return this.products();
   }
 
-  getProductsAll(): void {
+  getProductsAll() {
     this.loading = true;
-    this.productService.getProductsData().subscribe((data) => {
-      this.products.set(data);
-      this.loading = false;
+    this.productService.getProductsData().subscribe({
+      next: (data) => {
+        this.products.set(data);
+        this.loading = false;
+      },
+      error: () => (this.loading = false)
     });
   }
 
-  getSeverity(state: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+  getCategories() {
+    this.productService.getCategories().subscribe(res => this.categories = res);
+  }
+
+  getSeverity(state: string): 'success' | 'warn' | 'danger' | 'info' {
     switch (state) {
-      case 'DISPONIBLE':
-        return 'success';
-      case 'BAJO_STOCK':
-        return 'warn';
-      case 'AGOTADO':
-        return 'danger';
-      default:
-        return 'info';
+      case 'DISPONIBLE': return 'success';
+      case 'BAJO_STOCK': return 'warn';
+      case 'AGOTADO': return 'danger';
+      default: return 'info';
     }
   }
 
   getImageUrl(imagePath: string | null | undefined): string {
-    if (!imagePath?.trim()) {
-      return '/assets/no-image.png';
-    }
-    const url = `${environment.apiUrl}${imagePath}`;
-    return url;
+    return imagePath?.trim() ? `${environment.apiUrl}${imagePath}` : '/assets/no-image.png';
   }
 
-  onFileSelected(event: Event, product: Product) {
+  // Abrir dialog para crear nuevo producto
+  openNew() {
+    this.productForm.reset({ inventoryState: 'DISPONIBLE', price: 0, stock: 0 });
+    this.isEditMode = false;
+    this.selectedProduct = null;
+    this.productDialog = true;
+    this.submitted = false;
+  }
+
+  
+
+  // Abrir dialog para editar
+  editProduct(product: Product) {
+    this.isEditMode = true;
+    this.selectedProduct = product;
+    this.productForm.patchValue({
+      name: product.name,
+      categoryId: product.category.id,
+      category: product.category,
+      price: product.price,
+      stock: product.stock,
+      inventoryState: product.inventoryState,
+      image: null
+    });
+    this.productDialog = true;
+    this.submitted = false;
+  }
+
+  hideDialog() {
+    this.productDialog = false;
+  }
+
+  saveProduct() {
+    this.submitted = true;
+    if (this.productForm.invalid) return;
+
+    const productData = this.productForm.value;
+
+    if (this.isEditMode && this.selectedProduct) {
+      this.productService.updateProduct(this.selectedProduct.id, productData).subscribe(() => {
+        this.getProductsAll();
+        this.productDialog = false;
+      });
+    } else {
+      this.productService.createProduct(productData).subscribe(() => {
+        this.getProductsAll();
+        this.productDialog = false;
+      });
+    }
+  }
+
+  deleteProduct(product: Product) {
+    if (confirm(`¿Deseas eliminar "${product.name}"?`)) {
+      this.productService.deleteProduct(product.id).subscribe(() => this.getProductsAll());
+    }
+  }
+
+  onFileSelected(event: Event, product: Product | null = null) {
   const input = event.target as HTMLInputElement;
   if (!input.files?.length) return;
 
   const file = input.files[0];
 
-  // Crear FormData para enviar al backend
-  const formData = new FormData();
-  formData.append('image', file);
-
-  // Llamada al servicio que actualiza la imagen
-  this.productService.uploadProductImage(product.id, formData).subscribe({
-    next: (updatedProduct) => {
+  if (product) {
+    // Subir imagen al producto existente
+    const formData = new FormData();
+    formData.append('image', file);
+    this.productService.uploadProductImage(product.id, formData).subscribe(() => {
       this.getProductsAll();
-    },
-    error: (err) => {
-      console.error('Error subiendo imagen', err);
-    }
-  });
+    });
+  } else {
+    // Guardar archivo en el formulario de creación
+    this.productForm.patchValue({ image: file });
+  }
 }
 
 }

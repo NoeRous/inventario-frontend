@@ -2,49 +2,45 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { HttpClient } from '@angular/common/http';
 import { Product } from '../domain/product.model';
-    
+import { Observable } from 'rxjs';
+
 @Injectable({
-  providedIn: 'root', // <- esto asegura que el servicio exista globalmente
+  providedIn: 'root',
 })
 export class ProductService {
 
-    private apiUrl =  `${environment.apiUrl}/products`;
+  private apiUrl = `${environment.apiUrl}/products`;
+  private categoryUrl = `${environment.apiUrl}/categories`;
 
-    constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
-    getProductsData() {
-        return this.http.get<Product[]>(this.apiUrl);
-    }
+  // Listar todos los productos
+  getProductsData(): Observable<Product[]> {
+    return this.http.get<Product[]>(this.apiUrl);
+  }
 
-    createProduct(product: Product) {
-        return this.http.post<Product>(this.apiUrl, product);
-    }
+  // Crear un producto
+  createProduct(product: Product): Observable<Product> {
+    return this.http.post<Product>(this.apiUrl, product);
+  }
 
-    uploadProductImage(productId: string, formData: FormData) {
-    return this.http.post<Product>(
-        `${this.apiUrl}/upload/${productId}/image`, // backend endpoint
-        formData
-    );
+  // Actualizar producto
+  updateProduct(productId: string, product: Product): Observable<Product> {
+    return this.http.put<Product>(`${this.apiUrl}/${productId}`, product);
+  }
+
+  // Eliminar producto
+  deleteProduct(productId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${productId}`);
+  }
+
+  // Subir imagen de producto
+  uploadProductImage(productId: string, formData: FormData): Observable<Product> {
+    return this.http.post<Product>(`${this.apiUrl}/upload/${productId}/image`, formData);
+  }
+
+  // Traer categorías (para dropdown)
+  getCategories(): Observable<{ id: string; name: string }[]> {
+    return this.http.get<{ id: string; name: string }[]>(this.categoryUrl);
+  }
 }
-
-
-   /* getProductsMini() {
-        return Promise.resolve(this.getProductsData().slice(0, 5));
-    }
-
-    getProductsSmall() {
-        return Promise.resolve(this.getProductsData().slice(0, 10));
-    }
-
-    getProducts() {
-        return Promise.resolve(this.getProductsData());
-    }
-
-    getProductsWithOrdersSmall() {
-        return Promise.resolve(this.getProductsWithOrdersData().slice(0, 10));
-    }
-
-    getProductsWithOrders() {
-        return Promise.resolve(this.getProductsWithOrdersData());
-    }*/
-};

@@ -3,13 +3,14 @@
     <h2 class="text-xl font-semibold">Inventario de Productos</h2>
   </div>
 
-  <p-table #dt [value]="productList" dataKey="id" [rows]="5" [rowsPerPageOptions]="[5,10,25]" [paginator]="true"
-           [loading]="loading" [globalFilterFields]="['name','category.name','inventoryState']"
-           size="small" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos">
+  <p-table #dt [value]="productList" stripedRows dataKey="id" [rows]="5" [rowsPerPageOptions]="[5,10,25]"
+    [paginator]="true" [loading]="loading" [globalFilterFields]="['name','category.name','inventoryState']" size="small"
+    [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos">
 
     <ng-template #caption>
       <div class="flex justify-end mb-2">
-        <input pInputText type="text" (input)="dt.filterGlobal($event.target.value,'contains')" placeholder="Buscar..." />
+        <input pInputText type="text" (input)="dt.filterGlobal($event.target.value,'contains')"
+          placeholder="Buscar..." />
         <button pButton label="Nuevo Producto" icon="pi pi-plus" class="p-button-sm" (click)="openNew()"></button>
       </div>
 
@@ -30,39 +31,44 @@
     <ng-template #body let-product>
       <tr class="text-sm">
         <td class="text-center">
-          <img [src]="getImageUrl(product.image)" [alt]="product.name" class="w-20 h-20 object-cover rounded-md mx-auto" />
+          <img [src]="getImageUrl(product.image)" [alt]="product.name"
+            class="w-20 h-20 object-cover rounded-md mx-auto" />
         </td>
         <td class="font-medium truncate max-w-xs">
           {{ product.name }}
           <br>
-          <small>  {{ product.description }}</small>
+          <small> {{ product.description }}</small>
         </td>
         <td class="truncate max-w-xs">{{ product.category.name }}</td>
-        <td><p-tag [value]="product.inventoryState" [severity]="getSeverity(product.inventoryState)" class="text-xs py-1 px-2"></p-tag></td>
+        <td><p-tag [value]="product.inventoryState" [severity]="getSeverity(product.inventoryState)"
+            class="text-xs py-1 px-2"></p-tag></td>
         <td>{{ product.price | currency:'Bs. ' }}</td>
         <td>{{ product.stock }}</td>
         <td class="flex gap-1 flex-wrap justify-center">
-          <button   severity="info" [rounded]="true" pButton icon="pi pi-upload" class="p-button-sm" (click)="fileInput.click()" title="Subir foto"></button>
-          <input type="file" #fileInput accept="image/*" style="display:none" (change)="onFileSelected($event, product)" />
+          <button severity="info" [rounded]="true" pButton icon="pi pi-upload" class="p-button-sm"
+            (click)="fileInput.click()" title="Subir foto"></button>
+          <input type="file" #fileInput accept="image/*" style="display:none"
+            (change)="onFileSelected($event, product)" />
 
-          <button severity="success"  [rounded]="true" pButton icon="pi pi-pencil" class="p-button-sm" (click)="editProduct(product)" title="Editar"></button>
+          <button severity="success" [rounded]="true" pButton icon="pi pi-pencil" class="p-button-sm"
+            (click)="editProduct(product)" title="Editar"></button>
+          <p-button (onClick)="displayProduct($event, product)" icon="pi pi-search" severity="secondary" rounded />
         </td>
       </tr>
     </ng-template>
 
     <ng-template #emptymessage>
-      <tr><td colspan="7" class="text-center text-sm">No se encontraron productos.</td></tr>
+      <tr>
+        <td colspan="7" class="text-center text-sm">No se encontraron productos.</td>
+      </tr>
     </ng-template>
 
   </p-table>
 </div>
 
 <!-- Dialog para Crear / Editar -->
- <p-dialog
-  [(visible)]="productDialog"
-  [style]="{ width: '450px' }"
-  header="{{ isEditMode ? 'Editar Producto' : 'Nuevo Producto' }}"
-  [modal]="true">
+<p-dialog [(visible)]="productDialog" [style]="{ width: '450px' }"
+  header="{{ isEditMode ? 'Editar Producto' : 'Nuevo Producto' }}" [modal]="true">
 
   <ng-template #content>
     <form [formGroup]="productForm" class="flex flex-col gap-6">
@@ -71,18 +77,16 @@
       <div>
         <label class="block font-bold mb-3">Nombre</label>
         <input pInputText formControlName="name" fluid />
-        <small class="text-red-500"
-          *ngIf="submitted && productForm.get('name')?.invalid">
+        <small class="text-red-500" *ngIf="submitted && productForm.get('name')?.invalid">
           El nombre es requerido
         </small>
       </div>
-      
+
       <!-- Descripción -->
       <div>
         <label class="block font-bold mb-3">Descripción</label>
         <input pInputText formControlName="description" fluid />
-        <small class="text-red-500"
-          *ngIf="submitted && productForm.get('description')?.invalid">
+        <small class="text-red-500" *ngIf="submitted && productForm.get('description')?.invalid">
           La descripción es requerida
         </small>
       </div>
@@ -90,13 +94,8 @@
       <!-- Categoría -->
       <div>
         <label class="block font-bold mb-3">Categoría</label>
-        <p-select
-          [options]="categories"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Seleccione categoría"
-          formControlName="categoryId"
-          fluid>
+        <p-select [options]="categories" optionLabel="name" optionValue="id" placeholder="Seleccione categoría"
+          formControlName="categoryId" fluid>
         </p-select>
       </div>
 
@@ -104,18 +103,13 @@
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-6">
           <label class="block font-bold mb-3">Precio</label>
-          <p-inputnumber
-            formControlName="price"
-            mode="decimal"
-            fluid>
+          <p-inputnumber formControlName="price" mode="decimal" fluid>
           </p-inputnumber>
         </div>
 
         <div class="col-span-6">
           <label class="block font-bold mb-3">Stock</label>
-          <p-inputnumber
-            formControlName="stock"
-            fluid>
+          <p-inputnumber formControlName="stock" fluid>
           </p-inputnumber>
         </div>
       </div>
@@ -123,41 +117,37 @@
       <!-- Estado -->
       <div>
         <label class="block font-bold mb-3">Estado</label>
-        <p-select
-          [options]="inventoryStates"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Seleccione estado"
-          formControlName="inventoryState"
-          fluid>
+        <p-select [options]="inventoryStates" optionLabel="label" optionValue="value" placeholder="Seleccione estado"
+          formControlName="inventoryState" fluid>
         </p-select>
       </div>
 
       <!-- Imagen -->
       <div>
         <label class="block font-bold mb-3">Imagen</label>
-        <input
-          type="file"
-          class="p-inputtext w-full"
-          (change)="onFileSelected($event, selectedProduct)" />
+        <input type="file" class="p-inputtext w-full" (change)="onFileSelected($event, selectedProduct())" />
       </div>
 
     </form>
   </ng-template>
 
   <ng-template #footer>
-    <p-button
-      label="Cancelar"
-      icon="pi pi-times"
-      text
-      (click)="hideDialog()" />
+    <p-button label="Cancelar" icon="pi pi-times" text (click)="hideDialog()" />
 
-    <p-button
-      label="{{ isEditMode ? 'Actualizar' : 'Crear' }}"
-      icon="pi pi-check"
-      (click)="saveProduct()" />
+    <p-button label="{{ isEditMode ? 'Actualizar' : 'Crear' }}" icon="pi pi-check" (click)="saveProduct()" />
   </ng-template>
 
 </p-dialog>
 
-
+<p-popover #op (onHide)="selectedProduct.set(null)">
+  <ng-template #content>
+    <div *ngIf="selectedProduct()" class="rounded flex flex-col">
+      <div class="flex justify-center rounded">
+        <img class="rounded w-44 sm:w-64"
+          [src]="getImageUrl(selectedProduct()?.image)"
+          [alt]="selectedProduct()?.name" />
+      </div>
+  
+    </div>
+  </ng-template>
+</p-popover>

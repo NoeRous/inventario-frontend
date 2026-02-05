@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductService } from '../../../../service/ProductService';
@@ -12,34 +12,52 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { TagModule } from 'primeng/tag';
 import { environment } from '../../../../environments/environment.prod';
 import { SelectModule } from 'primeng/select';
+import { Popover, PopoverModule } from 'primeng/popover';
 
 @Component({
   standalone: true,
   selector: 'app-product-list',
-  imports: [CommonModule, ReactiveFormsModule, TableModule, ButtonModule, DialogModule, InputTextModule, SelectModule, InputNumberModule, TagModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TableModule,
+    ButtonModule,
+    DialogModule,
+    InputTextModule,
+    SelectModule,
+    InputNumberModule,
+    TagModule,
+    PopoverModule
+  ],
   templateUrl: './product-list.html',
-  styleUrls: ['./product-list.scss']
+  styleUrls: ['./product-list.scss'],
 })
 export class ProductList implements OnInit {
   products = signal<Product[]>([]);
   loading = false;
+  selectedProduct = signal<Product | null>(null);
+  @ViewChild('op') op!: Popover;
+
 
   inventoryStates = [
     { label: 'DISPONIBLE', value: 'DISPONIBLE' },
     { label: 'BAJO_STOCK', value: 'BAJO_STOCK' },
-    { label: 'AGOTADO', value: 'AGOTADO' }
+    { label: 'AGOTADO', value: 'AGOTADO' },
   ];
 
   categories: { id: string; name: string }[] = [];
 
   productForm: FormGroup;
   isEditMode = false;
-  selectedProduct: Product | null = null;
+  //selectedProduct: Product | null = null;
 
   productDialog = false; // controla visibilidad del dialog
   submitted = false;
 
-  constructor(private productService: ProductService, private fb: FormBuilder) {
+  constructor(
+    private productService: ProductService,
+    private fb: FormBuilder,
+  ) {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
@@ -48,7 +66,7 @@ export class ProductList implements OnInit {
       price: [0, Validators.required],
       stock: [0, Validators.required],
       inventoryState: ['DISPONIBLE', Validators.required],
-      image: [null]
+      image: [null],
     });
   }
 
@@ -68,20 +86,24 @@ export class ProductList implements OnInit {
         this.products.set(data);
         this.loading = false;
       },
-      error: () => (this.loading = false)
+      error: () => (this.loading = false),
     });
   }
 
   getCategories() {
-    this.productService.getCategories().subscribe(res => this.categories = res);
+    this.productService.getCategories().subscribe((res) => (this.categories = res));
   }
 
   getSeverity(state: string): 'success' | 'warn' | 'danger' | 'info' {
     switch (state) {
-      case 'DISPONIBLE': return 'success';
-      case 'BAJO_STOCK': return 'warn';
-      case 'AGOTADO': return 'danger';
-      default: return 'info';
+      case 'DISPONIBLE':
+        return 'success';
+      case 'BAJO_STOCK':
+        return 'warn';
+      case 'AGOTADO':
+        return 'danger';
+      default:
+        return 'info';
     }
   }
 
@@ -93,17 +115,15 @@ export class ProductList implements OnInit {
   openNew() {
     this.productForm.reset({ inventoryState: 'DISPONIBLE', price: 0, stock: 0 });
     this.isEditMode = false;
-    this.selectedProduct = null;
+    this.selectedProduct.set(null);
     this.productDialog = true;
     this.submitted = false;
   }
 
-  
-
   // Abrir dialog para editar
   editProduct(product: Product) {
     this.isEditMode = true;
-    this.selectedProduct = product;
+    this.selectedProduct.set(product);
     this.productForm.patchValue({
       name: product.name,
       description: product.description,
@@ -112,7 +132,7 @@ export class ProductList implements OnInit {
       price: product.price,
       stock: product.stock,
       inventoryState: product.inventoryState,
-      image: null
+      image: null,
     });
     this.productDialog = true;
     this.submitted = false;
@@ -128,8 +148,8 @@ export class ProductList implements OnInit {
 
     const productData = this.productForm.value;
 
-    if (this.isEditMode && this.selectedProduct) {
-      this.productService.updateProduct(this.selectedProduct.id, productData).subscribe(() => {
+    if (this.isEditMode && this.selectedProduct()) {
+      this.productService.updateProduct(this.selectedProduct()!.id, productData).subscribe(() => {
         this.getProductsAll();
         this.productDialog = false;
       });
@@ -148,22 +168,40 @@ export class ProductList implements OnInit {
   }
 
   onFileSelected(event: Event, product: Product | null = null) {
-  const input = event.target as HTMLInputElement;
-  if (!input.files?.length) return;
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
 
-  const file = input.files[0];
+    const file = input.files[0];
 
-  if (product) {
-    // Subir imagen al producto existente
-    const formData = new FormData();
-    formData.append('image', file);
-    this.productService.uploadProductImage(product.id, formData).subscribe(() => {
-      this.getProductsAll();
-    });
-  } else {
-    // Guardar archivo en el formulario de creación
-    this.productForm.patchValue({ image: file });
+    if (product) {
+      // Subir imagen al producto existente
+      const formData = new FormData();
+      formData.append('image', file);
+      this.productService.uploadProductImage(product.id, formData).subscribe(() => {
+        this.getProductsAll();
+      });
+    } else {
+      // Guardar archivo en el formulario de creación
+      this.productForm.patchValue({ image: file });
+    }
   }
-}
+  
+  displayProduct(event: any, product: Product) {
+        if (this.selectedProduct()?.id === product.id) {
+            this.op.hide();
+            this.selectedProduct.set(null);
+        } else {
+            this.selectedProduct.set(product);
+            this.op.show(event);
+        
+            if (this.op.container) {
+                this.op.align();
+            }
+        }
+    }
+
+  hidePopover() {
+    this.op.hide();
+  }
 
 }

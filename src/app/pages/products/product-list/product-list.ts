@@ -322,6 +322,42 @@ export class ProductList implements OnInit {
     });
   }
 
+  confirmDeleteProduct(event: Event, product: Product) {
+  event.stopPropagation();
+
+  this.confirmationService.confirm({
+    target: event.target as EventTarget,
+    message: '¿Eliminar este producto?',
+    header: 'Confirmar',
+    icon: 'pi pi-exclamation-triangle',
+
+    accept: () => {
+      this.productService.deleteProduct(product.id).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Eliminado',
+            detail: 'Producto eliminado correctamente',
+          });
+          this.getProductsAll();
+        },
+        error: (err) => {
+          // 👇 AQUÍ capturamos el mensaje del backend
+          const backendMessage =
+            err?.error?.message || 'No se pudo eliminar el producto';
+
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'No se pudo eliminar',
+            detail: backendMessage,
+          });
+        },
+      });
+    },
+  });
+}
+
+
   confirmDeleteDetail(event: Event, detail: ProductDetail) {
     event.stopPropagation();
 

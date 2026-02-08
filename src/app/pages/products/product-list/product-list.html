@@ -53,6 +53,9 @@
           <button severity="success" [rounded]="true" pButton icon="pi pi-pencil" class="p-button-sm"
             (click)="editProduct(product)" title="Editar"></button>
           <p-button (onClick)="displayProductDetails(product)" icon="pi pi-search" severity="secondary" rounded />
+
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+            (click)="confirmDeleteProduct($event, product)"  />
         </td>
       </tr>
     </ng-template>

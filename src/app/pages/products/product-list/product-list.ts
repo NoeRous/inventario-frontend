@@ -88,7 +88,7 @@ export class ProductList implements OnInit {
       categoryId: ['', Validators.required],
       category: [null, Validators.required],
       price: [0, Validators.required],
-      stock: [0, Validators.required],
+      stock: [{ value: 0, disabled: true }], 
       inventoryState: ['DISPONIBLE', Validators.required],
       image: [null],
     });
@@ -277,6 +277,7 @@ export class ProductList implements OnInit {
 
         this.reloadDetails();
         this.resetForm();
+        this.getProductsAll();
       });
     } else {
       // CREAR
@@ -290,6 +291,7 @@ export class ProductList implements OnInit {
 
         this.reloadDetails();
         this.resetForm();
+        this.getProductsAll();
       });
     }
   }
@@ -334,6 +336,7 @@ export class ProductList implements OnInit {
 
           this.reloadDetails();
           this.resetForm();
+          this.getProductsAll();
         });
       },
     });

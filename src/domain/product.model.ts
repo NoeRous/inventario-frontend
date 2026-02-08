@@ -15,3 +15,12 @@ export interface Product {
     name: string;
   };
 }
+
+export interface ProductDetail {
+  id: string;
+  color: string;
+  size: string;
+  stock: number;
+  warehouse: string;
+  product: Product | null;
+}

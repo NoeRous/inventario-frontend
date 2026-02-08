@@ -1,8 +1,14 @@
 import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
 import { ProductService } from '../../../../service/ProductService';
-import { Product } from '../../../../domain/product.model';
+import { Product, ProductDetail } from '../../../../domain/product.model';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -19,6 +25,7 @@ import { Popover, PopoverModule } from 'primeng/popover';
   selector: 'app-product-list',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
@@ -27,7 +34,7 @@ import { Popover, PopoverModule } from 'primeng/popover';
     SelectModule,
     InputNumberModule,
     TagModule,
-    PopoverModule
+    PopoverModule,
   ],
   templateUrl: './product-list.html',
   styleUrls: ['./product-list.scss'],
@@ -37,7 +44,21 @@ export class ProductList implements OnInit {
   loading = false;
   selectedProduct = signal<Product | null>(null);
   @ViewChild('op') op!: Popover;
+  selectedProductDetails = signal<ProductDetail[]>([]);
+  detailsDialog = false;
+  clonedDetails: { [id: string]: ProductDetail } = {};
 
+  detailForm: any = {
+    id: null,
+    color: '',
+    size: '',
+    stock: 0,
+    warehouse: '',
+    product: null,
+  };
+
+  selectedDetail: any = null;
+  isEditDetail = false;
 
   inventoryStates = [
     { label: 'DISPONIBLE', value: 'DISPONIBLE' },
@@ -185,23 +206,77 @@ export class ProductList implements OnInit {
       this.productForm.patchValue({ image: file });
     }
   }
-  
-  displayProduct(event: any, product: Product) {
-        if (this.selectedProduct()?.id === product.id) {
-            this.op.hide();
-            this.selectedProduct.set(null);
-        } else {
-            this.selectedProduct.set(product);
-            this.op.show(event);
-        
-            if (this.op.container) {
-                this.op.align();
-            }
-        }
-    }
 
-  hidePopover() {
-    this.op.hide();
+  displayProduct(event: any, product: Product) {
+    this.productService.getProductDetails(product.id).subscribe({
+      next: (details: ProductDetail[]) => {
+        this.selectedProductDetails.set(details);
+        this.selectedProduct.set(product);
+        this.op.show(event);
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
   }
 
+  addNewDetail() {
+    const newDetail: ProductDetail = {
+      id: null as any,
+      color: '',
+      size: '',
+      stock: 0,
+      warehouse: '',
+      product: this.selectedProduct(),
+    };
+
+    this.selectedProductDetails.update((list) => [...list, newDetail]);
+  }
+
+  displayProductDetails(product: Product) {
+    this.selectedProduct.set(product);
+
+    this.productService.getProductDetails(product.id).subscribe((details) => {
+      this.selectedProductDetails.set(details);
+      this.detailsDialog = true;
+    });
+  }
+
+  // detalle
+
+  onSelectDetail(event: any) {
+    this.detailForm = { ...event.data, product: this.selectedProduct() };
+    this.isEditDetail = true;
+  }
+
+  saveDetail() {
+    if (this.isEditDetail) {
+      // actualizar
+      this.productService.updateProductDetail(this.detailForm).subscribe(() => {
+        console.log('Actualizado');
+      });
+    } else {
+      // agregar
+      this.detailForm = { ...this.detailForm, product: this.selectedProduct() };
+      this.productService.createProductDetail(this.detailForm).subscribe((saved) => {
+        console.log('Creado', saved);
+      });
+      return;
+    }
+
+    this.resetForm();
+  }
+
+  resetForm() {
+    this.detailForm = {
+      id: null,
+      color: '',
+      size: '',
+      stock: 0,
+      warehouse: '',
+      product: null,
+    };
+    this.isEditDetail = false;
+    this.selectedDetail = null;
+  }
 }

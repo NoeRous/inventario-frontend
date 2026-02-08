@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
 import { HttpClient } from '@angular/common/http';
-import { Product } from '../domain/product.model';
+import { Product, ProductDetail } from '../domain/product.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -11,6 +11,7 @@ export class ProductService {
 
   private apiUrl = `${environment.apiUrl}/products`;
   private categoryUrl = `${environment.apiUrl}/categories`;
+  private apiUrlProductDetail = `${environment.apiUrl}/product-details`;
 
   constructor(private http: HttpClient) { }
 
@@ -43,4 +44,25 @@ export class ProductService {
   getCategories(): Observable<{ id: string; name: string }[]> {
     return this.http.get<{ id: string; name: string }[]>(this.categoryUrl);
   }
+
+  // listar detalles de productos
+  getProductDetails(productId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${productId}/details`);
+  }
+
+  createProductDetail(detail: ProductDetail) {
+    return this.http.post<ProductDetail>(
+      `${this.apiUrlProductDetail}`,
+      detail
+    );
+  }
+
+  updateProductDetail(detail: ProductDetail) {
+    console.log('Updating detail:', detail);
+    return this.http.put<ProductDetail>(
+      `${this.apiUrlProductDetail}/${detail.id}`,
+      detail
+    );
+  }
+
 }

@@ -142,36 +142,54 @@
 
   <!-- FORMULARIO -->
   <div class="surface-50 p-4 mb-4 border-round shadow-1">
+      <form [formGroup]="detailForm">
+        <div class="grid grid-cols-12 gap-4 items-end">
 
-    <div class="grid grid-cols-12 gap-4 items-end">
+          <div class="col-span-12 md:col-span-2">
+            <label class="block text-sm text-600 mb-1">Color</label>
+            <input pInputText formControlName="color" class="w-full"  placeholder="Ej: Rojo"/>
+             <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('color')?.invalid">
+              El color es requerido
+            </small>
+          </div>
 
-      <div class="col-span-12 md:col-span-2">
-        <label class="block text-sm text-600 mb-1">Color</label>
-        <input pInputText [(ngModel)]="detailForm.color" placeholder="Ej: Rojo" class="w-full" />
-      </div>
+          <div class="col-span-12 md:col-span-2">
+            <label class="block text-sm text-600 mb-1">Talla</label>
+            <input pInputText formControlName="size" placeholder="Ej: M" class="w-full" />
+            <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('size')?.invalid">
+              La talla es requerida
+            </small>
+          </div>
 
-      <div class="col-span-12 md:col-span-2">
-        <label class="block text-sm text-600 mb-1">Talla</label>
-        <input pInputText [(ngModel)]="detailForm.size" placeholder="Ej: M" class="w-full" />
-      </div>
+          <div class="col-span-12 md:col-span-2">
+            <label class="block text-sm text-600 mb-1">Stock</label>
+            <input pInputText type="number" formControlName="stock" class="w-full" />
+            <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('stock')?.invalid">
+              El stock es requerido
+            </small>
+          </div>
 
-      <div class="col-span-12 md:col-span-2">
-        <label class="block text-sm text-600 mb-1">Stock</label>
-        <input pInputText type="number" [(ngModel)]="detailForm.stock" class="w-full" />
-      </div>
+          <div class="col-span-12 md:col-span-2">
+            <label class="block text-sm text-600 mb-1">Almacén</label>
+            <input pInputText formControlName="warehouse" placeholder="Principal"  class="w-full" />
+              <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('warehouse')?.invalid">
+              El almacén es requerido
+            </small>
+          </div>
 
-      <div class="col-span-12 md:col-span-3">
-        <label class="block text-sm text-600 mb-1">Almacén</label>
-        <input pInputText [(ngModel)]="detailForm.warehouse" placeholder="Principal" class="w-full" />
-      </div>
+          <div class="col-span-12 md:col-span-4">
+            <button pButton type="button" class="w-full" [severity]="isEditDetail ? 'info' : 'success'"
+              [label]="isEditDetail ? 'Actualizar detalle' : 'Agregar detalle'"
+              [icon]="isEditDetail ? 'pi pi-check' : 'pi pi-plus'" (click)="saveDetail()">
+            </button>
 
-      <div class="col-span-12 md:col-span-3">
-        <button pButton class="w-full" [severity]="isEditDetail ? 'info' : 'success'"
-          [label]="isEditDetail ? 'Actualizar detalle' : 'Agregar detalle'"
-          [icon]="isEditDetail ? 'pi pi-check' : 'pi pi-plus'" (click)="saveDetail()"></button>
-      </div>
-
-    </div>
+            @if (isEditDetail) {
+              <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary"
+                (click)="resetForm()" title="Cancelar edición" />
+            }
+          </div>
+        </div>
+      </form>
   </div>
 
   <!-- TABLA -->
@@ -184,6 +202,7 @@
         <th>Talla</th>
         <th>Stock</th>
         <th>Almacén</th>
+        <th>Acciones</th>
       </tr>
     </ng-template>
 
@@ -197,9 +216,18 @@
           <p-tag [value]="detail.stock" severity="info"></p-tag>
         </td>
         <td>{{ detail.warehouse }}</td>
+        <td>
+          <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+            (click)="confirmDeleteDetail($event, detail)"  />
+        </td>
       </tr>
     </ng-template>
 
   </p-table>
 
 </p-dialog>
+
+<div class="card flex justify-center gap-2">
+  <p-toast />
+  <p-confirmdialog />
+</div>

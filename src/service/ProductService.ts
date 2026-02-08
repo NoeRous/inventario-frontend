@@ -65,4 +65,8 @@ export class ProductService {
     );
   }
 
+  deleteProductDetail(detailId: string) { 
+
+    return this.http.delete<void>(`${this.apiUrlProductDetail}/${detailId}`);
+  }
 }

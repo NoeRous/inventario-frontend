@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -20,6 +20,10 @@ import { environment } from '../../../../environments/environment.prod';
 import { SelectModule } from 'primeng/select';
 import { Popover, PopoverModule } from 'primeng/popover';
 
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
+import { MessageService, ConfirmationService } from 'primeng/api';
+
 @Component({
   standalone: true,
   selector: 'app-product-list',
@@ -35,11 +39,17 @@ import { Popover, PopoverModule } from 'primeng/popover';
     InputNumberModule,
     TagModule,
     PopoverModule,
+    ConfirmDialogModule,
+    ToastModule,
   ],
   templateUrl: './product-list.html',
   styleUrls: ['./product-list.scss'],
+  providers: [ConfirmationService, MessageService],
 })
 export class ProductList implements OnInit {
+  private confirmationService = inject(ConfirmationService);
+  private messageService = inject(MessageService);
+
   products = signal<Product[]>([]);
   loading = false;
   selectedProduct = signal<Product | null>(null);
@@ -48,16 +58,8 @@ export class ProductList implements OnInit {
   detailsDialog = false;
   clonedDetails: { [id: string]: ProductDetail } = {};
 
-  detailForm: any = {
-    id: null,
-    color: '',
-    size: '',
-    stock: 0,
-    warehouse: '',
-    product: null,
-  };
-
-  selectedDetail: any = null;
+  detailForm: FormGroup;
+  selectedDetail = signal<ProductDetail | null>(null);
   isEditDetail = false;
 
   inventoryStates = [
@@ -74,6 +76,7 @@ export class ProductList implements OnInit {
 
   productDialog = false; // controla visibilidad del dialog
   submitted = false;
+  submittedDetail = false;
 
   constructor(
     private productService: ProductService,
@@ -88,6 +91,15 @@ export class ProductList implements OnInit {
       stock: [0, Validators.required],
       inventoryState: ['DISPONIBLE', Validators.required],
       image: [null],
+    });
+
+    this.detailForm = this.fb.group({
+      id: [null],
+      color: ['', Validators.required],
+      size: ['', Validators.required],
+      stock: [0, Validators.required],
+      warehouse: ['', Validators.required],
+      product: [''],
     });
   }
 
@@ -220,19 +232,6 @@ export class ProductList implements OnInit {
     });
   }
 
-  addNewDetail() {
-    const newDetail: ProductDetail = {
-      id: null as any,
-      color: '',
-      size: '',
-      stock: 0,
-      warehouse: '',
-      product: this.selectedProduct(),
-    };
-
-    this.selectedProductDetails.update((list) => [...list, newDetail]);
-  }
-
   displayProductDetails(product: Product) {
     this.selectedProduct.set(product);
 
@@ -245,38 +244,98 @@ export class ProductList implements OnInit {
   // detalle
 
   onSelectDetail(event: any) {
-    this.detailForm = { ...event.data, product: this.selectedProduct() };
+    this.selectedDetail.set(event.data);
     this.isEditDetail = true;
+
+    this.detailForm.patchValue({
+      id: event.data.id,
+      color: event.data.color,
+      size: event.data.size,
+      stock: event.data.stock,
+      warehouse: event.data.warehouse,
+      product: this.selectedProduct()!,
+    });
   }
 
   saveDetail() {
+    this.submittedDetail = true;
+    const payload: ProductDetail = {
+      ...this.detailForm.value,
+      product: this.selectedProduct()!,
+    };
+
+    if (this.detailForm.invalid ) return;
+
     if (this.isEditDetail) {
-      // actualizar
-      this.productService.updateProductDetail(this.detailForm).subscribe(() => {
-        console.log('Actualizado');
+      // ACTUALIZAR
+      this.productService.updateProductDetail(payload).subscribe(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Actualizado',
+          detail: 'El detalle fue actualizado correctamente',
+        });
+
+        this.reloadDetails();
+        this.resetForm();
       });
     } else {
-      // agregar
-      this.detailForm = { ...this.detailForm, product: this.selectedProduct() };
-      this.productService.createProductDetail(this.detailForm).subscribe((saved) => {
-        console.log('Creado', saved);
-      });
-      return;
-    }
+      // CREAR
+      console.log('Creating detail with payload ENTRA:', payload);
+      this.productService.createProductDetail(payload).subscribe(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Creado',
+          detail: 'El detalle fue creado correctamente',
+        });
 
-    this.resetForm();
+        this.reloadDetails();
+        this.resetForm();
+      });
+    }
   }
 
   resetForm() {
-    this.detailForm = {
+    this.detailForm.reset({
       id: null,
       color: '',
       size: '',
       stock: 0,
       warehouse: '',
-      product: null,
-    };
+    });
+
     this.isEditDetail = false;
-    this.selectedDetail = null;
+    this.selectedDetail.set(null);
+    this.submittedDetail = false;
+  }
+
+  reloadDetails() {
+    if (!this.selectedProduct()) return;
+
+    this.productService.getProductDetails(this.selectedProduct()!.id).subscribe((details) => {
+      this.selectedProductDetails.set(details);
+    });
+  }
+
+  confirmDeleteDetail(event: Event, detail: ProductDetail) {
+    event.stopPropagation();
+
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: '¿Eliminar este detalle?',
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.productService.deleteProductDetail(detail.id).subscribe(() => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Eliminado',
+            detail: 'Detalle eliminado correctamente',
+          });
+
+          this.reloadDetails();
+          this.resetForm();
+        });
+      },
+    });
   }
 }

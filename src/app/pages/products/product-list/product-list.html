@@ -73,6 +73,15 @@
   <ng-template #content>
     <form [formGroup]="productForm" class="flex flex-col gap-6">
 
+      <!-- cod -->
+      <div>
+        <label class="block font-bold mb-3">Código</label>
+        <input pInputText formControlName="code" fluid />
+        <small class="text-red-500" *ngIf="submitted && productForm.get('code')?.invalid">
+          El código es requerido
+        </small>
+      </div> 
+
       <!-- Nombre -->
       <div>
         <label class="block font-bold mb-3">Nombre</label>

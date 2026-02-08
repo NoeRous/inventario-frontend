@@ -83,10 +83,11 @@ export class ProductList implements OnInit {
     private fb: FormBuilder,
   ) {
     this.productForm = this.fb.group({
+      code: ['', Validators.required],
       name: ['', Validators.required],
       description: ['', Validators.required],
       categoryId: ['', Validators.required],
-      category: [null, Validators.required],
+      //category: [null, Validators.required],
       price: [0, Validators.required],
       stock: [{ value: 0, disabled: true }], 
       inventoryState: ['DISPONIBLE', Validators.required],
@@ -158,6 +159,7 @@ export class ProductList implements OnInit {
     this.isEditMode = true;
     this.selectedProduct.set(product);
     this.productForm.patchValue({
+      code: product.code,
       name: product.name,
       description: product.description,
       categoryId: product.category.id,
@@ -180,6 +182,7 @@ export class ProductList implements OnInit {
     if (this.productForm.invalid) return;
 
     const productData = this.productForm.value;
+    console.log('Creating product with data-----:', productData);
 
     if (this.isEditMode && this.selectedProduct()) {
       this.productService.updateProduct(this.selectedProduct()!.id, productData).subscribe(() => {
@@ -187,6 +190,7 @@ export class ProductList implements OnInit {
         this.productDialog = false;
       });
     } else {
+      console.log('Creating product with data:', productData);
       this.productService.createProduct(productData).subscribe(() => {
         this.getProductsAll();
         this.productDialog = false;

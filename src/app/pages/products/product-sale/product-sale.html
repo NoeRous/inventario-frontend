@@ -1,3 +1,5 @@
+<p-toast />
+
 <div class="font-semibold text-xl mb-4">Ventas</div>
 
 <div class="flex flex-col md:flex-row gap-8 mt-6">
@@ -27,6 +29,7 @@
                         <th>Talla</th>
                         <th>Stock</th>
                         <th>Almacén</th>
+                        <th></th>
                     </tr>
                 </ng-template>
 
@@ -34,7 +37,7 @@
                 <ng-template pTemplate="body" let-product let-rowIndex="rowIndex" let-rowgroup="rowgroup"
                     let-rowspan="rowspan">
 
-                    <tr>
+                    <tr [ngClass]="{' bg-green-500 font-semibold': isSelected(product)}">
                         <td>{{ rowIndex + 1 }}</td>
                         <td *ngIf="rowgroup" [attr.rowspan]="rowspan" class="align-middle">
 
@@ -52,6 +55,10 @@
                         <td>{{ product.size }}</td>
                         <td>{{ product.stock }}</td>
                         <td>{{ product.warehouse }}</td>
+                        <td>
+                            <p-button icon="pi pi-plus" [rounded]="true" [text]="true" severity="success"
+                                (onClick)="addProduct(product)" />
+                        </td>
                     </tr>
 
                 </ng-template>
@@ -71,8 +78,72 @@
     </div>
 
     <div class="md:w-1/3">
-        <div class="card">
-            <div class="font-semibold text-xl mb-4">Productos seleccionados</div>
+        <div class="card p-3">
+
+            <div class="font-semibold text-lg mb-3">
+                Productos seleccionados
+            </div>
+
+            <div *ngIf="cart().length === 0" class="text-500 text-sm text-center">
+                No hay productos agregados
+            </div>
+
+            <div *ngFor="let item of cart()"
+                class="flex justify-content-between align-items-center mb-2 pb-2 border-bottom-1 text-sm">
+
+                <!-- INFO PRODUCTO -->
+                <div class="flex flex-column gap-0">
+                    <span class="font-medium">
+                        {{ item.productName }}
+                    </span>
+                    <small class="text-500">
+                        {{ item.color }} - {{ item.size }}
+                    </small>
+                </div>
+                <!-- CANTIDAD -->
+                <p-inputNumber [(ngModel)]="item.quantity" [showButtons]="true" buttonLayout="horizontal" [min]="1"
+                    [max]="item.stock" styleClass="w-4rem" [inputStyle]="{
+                        height: '28px',
+                        fontSize: '10px',
+                        padding: '2px 4px',
+                        width: '100%'
+                    }" [style]="{
+                        height: '28px'
+                    }">
+                </p-inputNumber>
+
+
+
+
+                <!-- PRECIO -->
+                <div class="text-right">
+                    <div class="text-sm">
+                        {{ item.price | currency:'BOB' }}
+                    </div>
+                    <div class="font-semibold text-sm">
+                        {{ item.price * item.quantity | currency:'BOB' }}
+                    </div>
+
+                    <button pButton icon="pi pi-trash" severity="danger" text class="p-button-sm mt-1"
+                        (click)="removeProduct(item.productDetailId)">
+                    </button>
+                </div>
+
+            </div>
+
+            <hr class="my-2" />
+
+            <!-- TOTAL -->
+            <div class="flex justify-content-between font-semibold text-base">
+                <span>Total:</span>
+                <span>{{ total() | currency:'BOB' }}</span>
+            </div>
+
+            <!-- BOTÓN -->
+            <button pButton label="Registrar Venta" class="w-full mt-2 p-button-sm" severity="success"
+                [disabled]="cart().length === 0" (click)="registerSale()">
+            </button>
+
         </div>
     </div>
 </div>

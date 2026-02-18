@@ -9,11 +9,24 @@ import { Observable } from 'rxjs';
 })
 export class ProductSaleService {
     private apiUrl = `${environment.apiUrl}/sales`;
+    private apiUrlCustomers = `${environment.apiUrl}/customers`;
 
     constructor(private http: HttpClient) {}
 
      // Listar todos los productos de venta disponibles
     getProductsAvailablesData(): Observable<ProductAvailable[]> {
     return this.http.get<ProductAvailable[]>(`${this.apiUrl}/available-products`);
+    }
+
+    getClientsData(): Observable<Client[]> {
+        return this.http.get<Client[]>(`${this.apiUrlCustomers}`);
+    }
+
+    createClient(clientData: { fullName: string; phone: string }): Observable<Client> {
+        return this.http.post<Client>(`${this.apiUrlCustomers}`, clientData);
+    }
+
+    createSale(saleData:any): Observable<Client> {
+        return this.http.post<Client>(`${this.apiUrl}`, saleData);
     }
 }

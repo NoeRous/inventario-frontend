@@ -1,4 +1,21 @@
 <header class="toolbar">
-  <button class="menu-btn" (click)="toggle.emit()">☰</button>
-  <span class="title">Sistema de Inventario</span>
+  <div class="toolbar-left">
+    <button class="menu-btn" (click)="toggle.emit()">
+      <i class="pi pi-bars"></i>
+    </button>
+
+    <div class="brand">
+      <div class="brand-mark">D</div>
+      <div class="brand-text">
+        <span class="brand-name">Divinas</span>
+        <span class="brand-subtitle">Inventario Boutique</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar-right">
+    <span class="toolbar-pill">
+      Panel de ventas
+    </span>
+  </div>
 </header>

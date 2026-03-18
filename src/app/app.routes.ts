@@ -8,6 +8,7 @@ import { LoginComponent } from './pages/auth/login/login.component';
 import { authGuard } from './auth/auth.guard';
 import { OrderList } from './pages/products/order/order';
 import { ClientList } from './pages/clients/client-list/client-list';
+import { CategoryList } from './pages/categories/category-list/category-list';
 
 
 export const routes: Routes = [
@@ -39,7 +40,7 @@ export const routes: Routes = [
       },
       {
         path: 'categorias',
-        component: ProductList,
+        component: CategoryList,
         canActivate: [authGuard],
       },
       { path: 'clientes', component: ClientList, canActivate: [authGuard] },

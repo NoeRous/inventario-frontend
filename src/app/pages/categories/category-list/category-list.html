@@ -1,0 +1,55 @@
+<p-toast />
+
+<div class="header">
+  <div class="title">Categorías</div>
+</div>
+
+<div class="card">
+  <p-table
+    #dt
+    [value]="categoryList"
+    [loading]="loading"
+    showGridlines
+    stripedRows
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [globalFilterFields]="['name']"
+    [tableStyle]="{ 'min-width': '20rem' }"
+  >
+    <ng-template pTemplate="caption">
+      <span class="p-input-icon-left w-full md:w-20rem">
+        <i class="pi pi-search"></i>
+        <input
+          #filter
+          pInputText
+          type="text"
+          (input)="dt.filterGlobal(filter.value, 'contains')"
+          placeholder="Buscar categoría..."
+          class="w-full"
+        />
+      </span>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 6rem">#</th>
+        <th>Nombre</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-category let-rowIndex="rowIndex">
+      <tr>
+        <td>{{ rowIndex + 1 }}</td>
+        <td>{{ category.name }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="2" class="text-center">No se encontraron categorías</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+

@@ -1,0 +1,91 @@
+<p-toast />
+
+<div class="header">
+  <div class="title">Clientes</div>
+  <p-button label="Agregar cliente" icon="pi pi-plus" (onClick)="openNew()"></p-button>
+</div>
+
+<div class="card">
+  <p-table
+    #dt
+    [value]="clientList"
+    [loading]="loading"
+    showGridlines
+    stripedRows
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [globalFilterFields]="['fullName','phone']"
+    [tableStyle]="{ 'min-width': '20rem' }"
+  >
+    <ng-template pTemplate="caption">
+      <span class="p-input-icon-left w-full md:w-20rem">
+        <i class="pi pi-search"></i>
+        <input
+          #filter
+          pInputText
+          type="text"
+          (input)="dt.filterGlobal(filter.value, 'contains')"
+          placeholder="Buscar cliente..."
+          class="w-full"
+        />
+      </span>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 6rem">#</th>
+        <th>Nombre completo</th>
+        <th>Teléfono</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-client let-rowIndex="rowIndex">
+      <tr>
+        <td>{{ rowIndex + 1 }}</td>
+        <td>{{ client.fullName }}</td>
+        <td>{{ client.phone }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="3" class="text-center">No se encontraron clientes</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  header="Agregar cliente"
+  [(visible)]="clientDialog"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="hideDialog()"
+>
+  <form [formGroup]="clientForm" class="form">
+    <div class="field">
+      <label for="fullName">Nombre completo</label>
+      <input id="fullName" pInputText formControlName="fullName" autocomplete="off" />
+      <small class="p-error" *ngIf="submitted && clientForm.get('fullName')?.invalid">
+        El nombre es requerido
+      </small>
+    </div>
+
+    <div class="field">
+      <label for="phone">Teléfono</label>
+      <input id="phone" pInputText formControlName="phone" autocomplete="off" />
+      <small class="p-error" *ngIf="submitted && clientForm.get('phone')?.invalid">
+        El teléfono es requerido
+      </small>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="hideDialog()" />
+    <p-button label="Guardar" (onClick)="saveClient()" />
+  </ng-template>
+</p-dialog>
+

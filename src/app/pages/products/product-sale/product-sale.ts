@@ -23,6 +23,7 @@ import { ImageModule } from 'primeng/image';
 import { DividerModule } from 'primeng/divider';
 import { ProductSaleService } from '../../../../service/ProductSaleService';
 import { ProductAvailable } from '../../../../domain/product.model';
+import { Client } from '../../../../domain/client.model';
 import { environment } from '../../../../environments/environment';
 import { DrawerModule } from 'primeng/drawer';
 

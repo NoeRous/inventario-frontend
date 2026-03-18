@@ -1,0 +1,13 @@
+ .compact-table .p-datatable-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.compact-table th,
+.compact-table td {
+  padding: 0.25rem 0.4rem;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

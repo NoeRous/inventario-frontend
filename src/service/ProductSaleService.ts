@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment.prod';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Product, ProductAvailable, ProductDetail } from '../domain/product.model';
 import { Observable } from 'rxjs';
 
@@ -12,6 +12,12 @@ export class ProductSaleService {
     private apiUrlCustomers = `${environment.apiUrl}/customers`;
 
     constructor(private http: HttpClient) {}
+
+    // Listar ventas registradas
+    getSales(): Observable<any[]> {
+        const params = new HttpParams().set('type', 'direct_sale');
+        return this.http.get<any[]>(this.apiUrl, { params });
+    }
 
      // Listar todos los productos de venta disponibles
     getProductsAvailablesData(): Observable<ProductAvailable[]> {
@@ -28,5 +34,13 @@ export class ProductSaleService {
 
     createSale(saleData:any): Observable<Client> {
         return this.http.post<Client>(`${this.apiUrl}`, saleData);
+    }
+
+    // Listar pedidos registrados
+
+    getOrders(): Observable<any[]> {
+        const params = new HttpParams().set('type', 'order');
+    
+        return this.http.get<any[]>(this.apiUrl, { params });
     }
 }

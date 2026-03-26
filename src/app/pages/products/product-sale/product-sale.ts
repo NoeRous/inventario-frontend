@@ -96,8 +96,19 @@ export class ProductSale implements OnInit {
   }
 
   getImageUrl(imagePath: string | null | undefined): string {
-    return imagePath?.trim() ? `${environment.apiUrl}${imagePath}` : '/assets/no-image.png';
+    if (!imagePath || !imagePath.trim()) {
+      return '/assets/no-image.png';
+    }
+  
+    //  Si ya es URL completa (Cloudinary)
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+  
+    // Si es ruta local (/uploads)
+    return `${environment.apiUrl}${imagePath}`;
   }
+
   getProductsAvailables() {
     this.loading = true;
     this.productSaleService.getProductsAvailablesData().subscribe({

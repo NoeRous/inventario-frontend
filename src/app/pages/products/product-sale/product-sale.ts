@@ -80,6 +80,14 @@ export class ProductSale implements OnInit {
 
   clients = signal<Client[]>([]);
 
+  isDiscountDialogVisible = signal(false);
+  discountMode = signal<'amount' | 'percent'>('amount');
+  discountValue = signal<number>(0);
+  discountModeOptions = [
+    { label: 'Monto', value: 'amount' as const },
+    { label: 'Porcentaje', value: 'percent' as const },
+  ];
+
   constructor(
     private productSaleService: ProductSaleService,
     private fb: FormBuilder,
@@ -186,13 +194,48 @@ export class ProductSale implements OnInit {
   }
 
   // 💰 Total dinámico
-  total = computed(() => this.cart().reduce((sum, item) => sum + item.price * item.quantity, 0));
+  subtotal = computed(() => this.cart().reduce((sum, item) => sum + item.price * item.quantity, 0));
+
+  discountAmount = computed(() => {
+    const subtotal = this.subtotal();
+    const value = Number(this.discountValue() ?? 0);
+    const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0;
+
+    if (subtotal <= 0) return 0;
+
+    if (this.discountMode() === 'percent') {
+      const pct = Math.min(100, safeValue);
+      return Math.min(subtotal, (subtotal * pct) / 100);
+    }
+
+    return Math.min(subtotal, safeValue);
+  });
+
+  total = computed(() => Math.max(0, this.subtotal() - this.discountAmount()));
+
+  onOpenDiscountDialog() {
+    this.isDiscountDialogVisible.set(true);
+  }
+
+  clearDiscount() {
+    this.discountMode.set('amount');
+    this.discountValue.set(0);
+  }
 
   // 💾 Registrar venta
   registerSale() {
-    const subtotal = this.total(); // o calcula sin descuento si manejas separado
-    const discount = 0;
-    const total = subtotal - discount;
+    if (!this.selectedClient) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Cliente requerido',
+        detail: 'Selecciona un cliente para registrar la venta',
+      });
+      return;
+    }
+
+    const subtotal = this.subtotal();
+    const discount = this.discountAmount();
+    const total = this.total();
 
     const saleRequest = {
       type: 'direct_sale',
@@ -277,6 +320,25 @@ export class ProductSale implements OnInit {
   }
 
   confirmSale(event: Event) {
+    if (!this.selectedClient) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Cliente requerido',
+        detail: 'Selecciona un cliente para registrar la venta',
+      });
+      this.isSelectedClient = true;
+      return;
+    }
+
+    if (this.cart().length === 0) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Carrito vacío',
+        detail: 'Agrega al menos un producto para vender',
+      });
+      return;
+    }
+
     this.confirmationService.confirm({
       target: event.target as EventTarget,
       message: '¿Estás seguro de registrar esta venta?',

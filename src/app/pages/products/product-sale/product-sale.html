@@ -91,9 +91,6 @@
                     <br>
 
                 </div>
-
-
-
             </div>
 
 
@@ -172,15 +169,30 @@
 
             <hr class="my-2" />
 
-            <!-- TOTAL -->
-            <div class="flex justify-content-between font-semibold text-base">
+            <!-- RESUMEN -->
+            <div class="flex justify-content-between text-sm">
+                <span class="text-600">Subtotal:</span>
+                <span class="font-medium">{{ subtotal() | currency:'BOB' }}</span>
+            </div>
+
+            <div class="flex justify-content-between text-sm mt-2">
+                <div class="flex align-items-center gap-2">
+                    <span class="text-600">Descuento:</span>
+                    <button pButton type="button" icon="pi pi-tag" label="Agregar" class="p-button-text p-button-sm"
+                        (click)="onOpenDiscountDialog()" [disabled]="cart().length === 0">
+                    </button>
+                </div>
+                <span class="font-medium text-red-600">- {{ discountAmount() | currency:'BOB' }}</span>
+            </div>
+
+            <div class="flex justify-content-between font-semibold text-base mt-3">
                 <span>Total:</span>
                 <span>{{ total() | currency:'BOB' }}</span>
             </div>
 
             <!-- BOTÓN -->
             <button pButton label="Registrar Venta" class="w-full mt-2 p-button-sm" severity="success"
-                [disabled]="cart().length === 0" (click)="confirmSale($event)">
+                [disabled]="cart().length === 0 || !selectedClient" (click)="confirmSale($event)">
             </button>
 
         </div>
@@ -245,4 +257,33 @@
     </div>
 
     }
-</p-drawer>'
+</p-drawer>
+
+<p-dialog header="Descuento" [visible]="isDiscountDialogVisible()" (visibleChange)="isDiscountDialogVisible.set($event)"
+    [modal]="true" [closable]="true"
+    [style]="{ width: '40rem' }">
+    <div class="flex flex-column gap-3">
+        <div class="flex gap-2 align-items-center">
+            <p-select [options]="discountModeOptions" [ngModel]="discountMode()"
+                (ngModelChange)="discountMode.set($event)" optionLabel="label" optionValue="value" class="w-12rem">
+            </p-select>
+
+            <p-inputNumber [ngModel]="discountValue()" (ngModelChange)="discountValue.set($event)" [min]="0"
+                [max]="discountMode() === 'percent' ? 100 : subtotal()"
+                [suffix]="discountMode() === 'percent' ? '%' : ''" [mode]="discountMode() === 'percent' ? 'decimal' : 'currency'"
+                currency="BOB" locale="es-BO" class="w-full">
+            </p-inputNumber>
+        </div>
+        <br>
+
+        <div class="text-sm text-600">
+            Se aplicará: <span class="font-medium">- {{ discountAmount() | currency:'BOB' }}</span>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-2">
+            <button pButton type="button" label="Quitar" class="p-button-text" (click)="clearDiscount()"></button>
+            <button pButton type="button" label="Listo" severity="success"
+                (click)="isDiscountDialogVisible.set(false)"></button>
+        </div>
+    </div>
+</p-dialog>

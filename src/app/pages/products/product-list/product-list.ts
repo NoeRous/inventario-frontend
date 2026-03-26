@@ -142,7 +142,17 @@ export class ProductList implements OnInit {
   }
 
   getImageUrl(imagePath: string | null | undefined): string {
-    return imagePath?.trim() ? `${environment.apiUrl}${imagePath}` : '/assets/no-image.png';
+    if (!imagePath || !imagePath.trim()) {
+      return '/assets/no-image.png';
+    }
+  
+    //  Si ya es URL completa (Cloudinary)
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+  
+    // Si es ruta local (/uploads)
+    return `${environment.apiUrl}${imagePath}`;
   }
 
   // Abrir dialog para crear nuevo producto

@@ -12,7 +12,7 @@
     [rowsPerPageOptions]="[10,20,50]"
     [paginator]="true"
     [loading]="loading"
-    [globalFilterFields]="['id','customerName','status']"
+    [globalFilterFields]="['id','customer.fullName','type','status','paymentMethod']"
     size="small"
     [showCurrentPageReport]="true"
     currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} ventas"
@@ -30,11 +30,15 @@
 
     <ng-template #header>
       <tr>
-        <th>Nro</th>
+        <th>ID</th>
         <th>Fecha</th>
         <th>Cliente</th>
-        <th>Items</th>
+        <th>Tipo</th>
+        <th>Subtotal</th>
+        <th>Descuento</th>
         <th>Total</th>
+        <th>Pagado</th>
+        <th>Método</th>
         <th>Estado</th>
         <th>Acciones</th>
       </tr>
@@ -42,11 +46,15 @@
 
     <ng-template #body let-sale let-rowIndex="rowIndex">
       <tr class="text-sm">
-        <td>{{ rowIndex + 1 }}</td>
+        <td>{{ sale.id | slice:0:8 }}</td>
         <td>{{ sale.date | date:'short' }}</td>
-        <td>{{ sale.customerName || 'Sin cliente' }}</td>
-        <td>{{ sale.itemsCount }}</td>
-        <td>{{ sale.total | currency:'BOB' }}</td>
+        <td>{{ sale.customer?.fullName || 'Sin cliente' }}</td>
+        <td>{{ sale.type }}</td>
+        <td>{{ sale.subtotal | currency:'BOB ' }}</td>
+        <td>{{ sale.discount | currency:'BOB ' }}</td>
+        <td>{{ sale.total | currency:'BOB ' }}</td>
+        <td>{{ sale.amountPaid | currency:'BOB ' }}</td>
+        <td>{{ sale.paymentMethod }}</td>
         <td>
           <p-tag [value]="sale.status" [severity]="getStatusSeverity(sale.status)" class="text-xs py-1 px-2"></p-tag>
         </td>
@@ -64,7 +72,7 @@
 
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7" class="text-center text-sm">No se encontraron ventas.</td>
+        <td colspan="11" class="text-center text-sm">No se encontraron ventas.</td>
       </tr>
     </ng-template>
   </p-table>

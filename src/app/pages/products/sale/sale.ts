@@ -9,12 +9,22 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProductSaleService } from '../../../../service/ProductSaleService';
 
 interface Sale {
-  id: number;
+  id: string;
   date: string;
-  customerName: string;
+  type: string;
+  customer?: {
+    id: string;
+    fullName: string;
+    phone: string;
+    active: boolean;
+  } | null;
+  subtotal: number;
+  discount: number;
   total: number;
+  amountPaid: number;
+  paymentMethod: string;
   status: string;
-  itemsCount: number;
+  active: boolean;
 }
 
 @Component({
@@ -81,7 +91,7 @@ export class SaleList implements OnInit {
     this.messageService.add({
       severity: 'info',
       summary: 'Venta',
-      detail: `Venta #${sale.id} seleccionada`,
+      detail: `Venta #${sale.id.slice(0, 8)} seleccionada`,
     });
   }
 }

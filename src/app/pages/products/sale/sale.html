@@ -3,28 +3,14 @@
     <h2 class="text-xl font-semibold">Listado de Ventas</h2>
   </div>
 
-  <p-table
-    #dt
-    [value]="saleList"
-    stripedRows
-    dataKey="id"
-    [rows]="10"
-    [rowsPerPageOptions]="[10,20,50]"
-    [paginator]="true"
-    [loading]="loading"
-    [globalFilterFields]="['id','customer.fullName','type','status','paymentMethod']"
-    size="small"
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} ventas"
-  >
+  <p-table #dt [value]="saleList" stripedRows dataKey="id" [rows]="10" [rowsPerPageOptions]="[10,20,50]"
+    [paginator]="true" [loading]="loading"
+    [globalFilterFields]="['id','customer.fullName','type','status','paymentMethod']" size="small"
+    [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} ventas">
     <ng-template #caption>
       <div class="flex justify-end mb-2 gap-2">
-        <input
-          pInputText
-          type="text"
-          (input)="dt.filterGlobal($event.target.value,'contains')"
-          placeholder="Buscar..."
-        />
+        <input pInputText type="text" (input)="dt.filterGlobal($event.target.value,'contains')"
+          placeholder="Buscar..." />
       </div>
     </ng-template>
 
@@ -59,13 +45,7 @@
           <p-tag [value]="sale.status" [severity]="getStatusSeverity(sale.status)" class="text-xs py-1 px-2"></p-tag>
         </td>
         <td class="flex gap-1 flex-wrap justify-center">
-          <p-button
-            icon="pi pi-search"
-            [rounded]="true"
-            [text]="true"
-            severity="info"
-            (onClick)="confirmViewSale($event, sale)"
-          />
+          <p-button icon="pi pi-search" [rounded]="true" [text]="true" severity="info" (onClick)="onSelectSale(sale)" />
         </td>
       </tr>
     </ng-template>
@@ -76,4 +56,107 @@
       </tr>
     </ng-template>
   </p-table>
+</div>
+
+<p-dialog [(visible)]="itemsDialog" header="Detalles de venta" [modal]="true" [style]="{ width: '80vw' }">
+
+  <!-- DETALLES PRINCIPALES EN COLUMNAS -->
+  <div *ngIf="selectedSale() as sale" class="sale-summary" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; text-align: center; margin-bottom: 1rem; padding: 0 1rem;">
+    <div>
+      <strong>Fecha</strong>
+      <p>{{ sale.date | date:'short' }}</p>
+    </div>
+    <div>
+      <strong>Tipo</strong>
+      <p>{{ sale.type }}</p>
+    </div>
+    <div>
+      <strong>Pagado</strong>
+      <p>{{ sale.amountPaid |  currency:'BOB ' }}</p>
+    </div>
+    <div>
+      <strong>Descuento</strong>
+      <p>{{ sale.discount |  currency:'BOB ' }}</p>
+    </div>
+    <div>
+      <strong>Estado</strong>
+      <p>{{ sale.status }}</p>
+    </div>
+  </div>
+
+
+  <hr />
+
+  <!-- TABLA -->
+  <p-table [value]="saleItems()" dataKey="id" selectionMode="single" showGridlines rowHover class="p-datatable-sm">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Imagen</th>
+        <th>Producto</th>
+        <th>Color</th>
+        <th>Talla</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th>Subtotal</th>
+
+        <th>Almacén</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item>
+      <tr [pSelectableRow]="item" class="cursor-pointer">
+        <td>
+
+          <img [src]="getImageUrl(item.productDetail.product.image)" [alt]="item.productDetail.product.name"
+            class="w-20 h-20 object-cover rounded-md mx-auto" />
+        </td>
+
+        <td>
+          <div class="flex flex-column gap-1">
+            <span class="font-bold">
+              {{ item.productDetail.product.name }}
+            </span>
+
+            <small class="text-500">
+              {{ item.productDetail.product.code }}
+            </small>
+
+            <small class="text-500">
+              {{ item.productDetail.product.category.name }}
+            </small>
+          </div>
+        </td>
+
+        <td>{{ item.productDetail.color }}</td>
+
+        <td>
+          <span class="font-semibold">
+            {{ item.productDetail.size }}
+          </span>
+        </td>
+
+        <td>
+          <p-tag [value]="item.quantity" severity="info"></p-tag>
+        </td>
+
+        <td>
+          {{ item.unitPrice | currency:'BOB ':'symbol':'1.2-2' }}
+        </td>
+
+        <td>
+          <span class="font-bold">
+            {{ item.subtotal | currency:'BOB ':'symbol':'1.2-2' }}
+          </span>
+        </td>
+
+        <td>{{ item.productDetail.warehouse }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+</p-dialog>
+
+<div class="card flex justify-center gap-2">
+  <p-toast />
+  <p-confirmdialog />
 </div>

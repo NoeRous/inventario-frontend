@@ -44,4 +44,9 @@ export class ProductSaleService {
     
         return this.http.get<any[]>(this.apiUrl, { params });
     }
+
+    //listar items 
+    getSaleItems(saleId: string): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/${saleId}/items`);
+      }
 }

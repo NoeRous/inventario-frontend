@@ -7,6 +7,8 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProductSaleService } from '../../../../service/ProductSaleService';
+import { DialogModule } from 'primeng/dialog';
+import { environment } from '../../../../environments/environment.prod';
 
 interface Sale {
   id: string;
@@ -27,12 +29,48 @@ interface Sale {
   active: boolean;
 }
 
+export interface SaleItem {
+  id: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  productDetail: ProductDetail;
+}
+
+export interface ProductDetail {
+  productId: string;
+  id: string;
+  size: string;
+  color: string;
+  warehouse: string;
+  stock: number;
+  product: Product;
+}
+
+export interface Product {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  image: string;
+  rating: number;
+  inventoryState: string;
+  category: Category;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+}
+
 @Component({
   standalone: true,
   selector: 'app-sale-list',
   templateUrl: './sale.html',
   styleUrls: ['./sale.scss'],
-  imports: [CommonModule, TableModule, TagModule, ButtonModule, ToastModule, ConfirmDialogModule],
+  imports: [CommonModule, TableModule, TagModule, ButtonModule, ToastModule, ConfirmDialogModule,DialogModule],
   providers: [MessageService, ConfirmationService],
 })
 export class SaleList implements OnInit {
@@ -42,6 +80,12 @@ export class SaleList implements OnInit {
 
   sales = signal<Sale[]>([]);
   loading = false;
+  loadingItems = false;
+  itemsDialog = false;
+
+  selectedSale = signal<Sale | null>(null);
+  saleItems = signal<SaleItem[]>([]);
+
 
   ngOnInit(): void {
     this.loadSales();
@@ -93,6 +137,48 @@ export class SaleList implements OnInit {
       summary: 'Venta',
       detail: `Venta #${sale.id.slice(0, 8)} seleccionada`,
     });
+  }
+
+  onSelectSale(event: any): void {
+    const sale = event;
+    this.selectedSale.set(sale);
+    this.itemsDialog = true;
+  
+    if (sale?.id) {
+      this.loadItems(sale.id);
+    }
+  }
+
+  loadItems(saleId:string): void {
+    this.loadingItems = true;
+    this.saleService.getSaleItems(saleId).subscribe({
+      next: (data) => {
+        this.saleItems.set(data);
+        this.loadingItems = false;
+      },
+      error: () => {
+        this.loadingItems = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar las ventas',
+        });
+      },
+    });
+  }
+
+  getImageUrl(imagePath: string | null | undefined): string {
+    if (!imagePath || !imagePath.trim()) {
+      return '/assets/no-image.png';
+    }
+  
+    //  Si ya es URL completa (Cloudinary)
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+  
+    // Si es ruta local (/uploads)
+    return `${environment.apiUrl}${imagePath}`;
   }
 }
 

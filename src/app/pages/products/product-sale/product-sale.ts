@@ -26,6 +26,8 @@ import { ProductAvailable } from '../../../../domain/product.model';
 import { Client } from '../../../../domain/client.model';
 import { environment } from '../../../../environments/environment';
 import { DrawerModule } from 'primeng/drawer';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TextareaModule } from 'primeng/textarea';
 
 interface Product {
   id: number;
@@ -63,6 +65,8 @@ interface CartItem extends Product {
     DividerModule,
     DrawerModule,
     ButtonModule,
+    CheckboxModule,
+    TextareaModule
   ],
 })
 export class ProductSale implements OnInit {
@@ -77,6 +81,7 @@ export class ProductSale implements OnInit {
 
   isAddClient = signal(false);
   newClientForm: FormGroup;
+  saleDetailForm!: FormGroup;
 
   clients = signal<Client[]>([]);
 
@@ -88,6 +93,8 @@ export class ProductSale implements OnInit {
     { label: 'Porcentaje', value: 'percent' as const },
   ];
 
+  isSaleDetailsVisible = signal(false);
+
   constructor(
     private productSaleService: ProductSaleService,
     private fb: FormBuilder,
@@ -96,11 +103,25 @@ export class ProductSale implements OnInit {
       fullName: ['', Validators.required],
       phone: ['', Validators.required],
     });
+
+    this.saleDetailForm = this.fb.group({
+      observation: [''],
+      sold_by: [''],
+      seller_profit: [0],
+      sold_paid: [false],
+      delivered_by: [''],
+      delivery_profit: [0],
+      delivery_paid: [false]
+    });
   }
 
   ngOnInit() {
     this.getProductsAvailables();
     this.getClientsAll();
+  }
+
+  get saleDetail() {
+    return this.saleDetailForm.getRawValue();
   }
 
   getImageUrl(imagePath: string | null | undefined): string {
@@ -246,6 +267,14 @@ export class ProductSale implements OnInit {
       total: total,
       amountPaid: total,
       paymentMethod: 'cash',
+      observation: this.saleDetail.observation?? null,
+
+      soldBy: this.saleDetail.sold_by?? null,
+      sellerProfit:  this.saleDetail.seller_profit?? 0,
+      soldPaid: this.saleDetail.sold_paid?? false,
+      deliveredBy: this.saleDetail.delivered_by?? null,
+      deliveryProfit: this.saleDetail.delivery_profit?? 0,
+      deliveryPaid: this.saleDetail.delivery_paid?? false,
 
       saleItems: this.cart().map((item) => ({
         productDetailId: item.productDetailId,
@@ -264,6 +293,7 @@ export class ProductSale implements OnInit {
         this.cart.set([]);
         this.getProductsAvailables();
         this.selectedClient = undefined;
+        this.clearSaveDetailForm();
 
         this.messageService.add({
           severity: 'success',
@@ -367,4 +397,22 @@ export class ProductSale implements OnInit {
       },
     });
   }
+
+  onOpenDetailSaleDialog() {
+    this.isSaleDetailsVisible.set(true);
+  }
+
+  clearSaveDetailForm() {
+    this.saleDetailForm.reset({
+      observation: '',
+      sold_by: '',
+      seller_profit: 0,
+      sold_paid: false,
+      delivered_by: '',
+      delivery_profit: 0,
+      delivery_paid: false
+    });
+  }
+
+
 }

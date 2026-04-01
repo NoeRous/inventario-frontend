@@ -190,6 +190,42 @@
                 <span>{{ total() | currency:'BOB' }}</span>
             </div>
 
+            <hr class="my-2" />
+            <!-- DETALLES DE LAS VENTAS -->
+
+            <div class="flex justify-content-between text-sm mt-2">
+                <div class="flex align-items-center gap-2">
+                    <span class="text-600">Detalle de venta:</span>
+                    <button pButton type="button" icon="pi pi-file" label="Agregar" class="p-button-text p-button-sm"
+                        (click)="onOpenDetailSaleDialog()" [disabled]="cart().length === 0">
+                    </button>
+                </div>
+                <div *ngIf="saleDetail.observation || saleDetail.sold_by || saleDetail.delivered_by"
+                    class="surface-100 border-round p-2 text-xs flex flex-column gap-1">
+        
+                    <span *ngIf="saleDetail.observation">
+                        <strong>Obs:</strong> {{ saleDetail.observation }}
+                    </span>
+        
+                    <span *ngIf="saleDetail.sold_by">
+                        <strong>Vendido por:</strong> {{ saleDetail.sold_by }}
+                        <span *ngIf="saleDetail.seller_profit">
+                            - {{ saleDetail.seller_profit | currency:'BOB' }}
+                        </span>
+                        <span *ngIf="saleDetail.sold_paid"> - Pagado</span>
+                    </span>
+
+                    <span *ngIf="saleDetail.delivered_by">
+                        <strong>Entregado por:</strong> {{ saleDetail.delivered_by }}
+                        <span *ngIf="saleDetail.delivery_profit">
+                            - {{ saleDetail.delivery_profit | currency:'BOB' }}
+                        </span>
+                        <span *ngIf="saleDetail.delivery_paid"> - Pagado</span>
+                    </span>
+                </div>
+            </div>
+
+
             <!-- BOTÓN -->
             <button pButton label="Registrar Venta" class="w-full mt-2 p-button-sm" severity="success"
                 [disabled]="cart().length === 0 || !selectedClient" (click)="confirmSale($event)">
@@ -286,4 +322,60 @@
                 (click)="isDiscountDialogVisible.set(false)"></button>
         </div>
     </div>
+</p-dialog>
+
+
+<p-dialog [visible]="isSaleDetailsVisible()" [style]="{ width: '450px' }"
+  header="Detalles de Venta" [modal]="true" (onHide)="isSaleDetailsVisible.set(false)">
+
+  <ng-template #content>
+    <form [formGroup]="saleDetailForm" class="flex flex-col gap-6">
+
+      <!-- Observación -->
+      <div>
+        <label class="block font-bold mb-2">Observación:</label>
+        <textarea pInputTextarea formControlName="observation" rows="3" class="w-full"></textarea>
+      </div>
+
+      <!-- Vendedor -->
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Vendido por:</label>
+          <input pInputText formControlName="sold_by" class="w-full" />
+        </div>
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Ganancia: </label>
+          <input pInputText type="number" formControlName="seller_profit" class="w-full" />
+        </div>
+        <div class="col-span-12 md:col-span-4">
+            <label class="block font-bold mb-2">Pagado?:  </label>
+          <p-checkbox formControlName="sold_paid" binary="true" label="Pagado"></p-checkbox>
+        </div>
+      </div>
+
+      <!-- Repartidor -->
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Entregado por:</label>
+          <input pInputText formControlName="delivered_by" class="w-full" />
+        </div>
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Ganancia: </label>
+          <input pInputText type="number" formControlName="delivery_profit" class="w-full" />
+        </div>
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Pagado?:   </label>
+          <p-checkbox formControlName="delivery_paid" binary="true" label="Pagado"></p-checkbox>
+        </div>
+      </div>
+
+    </form>
+  </ng-template>
+
+  <ng-template #footer>
+    <button pButton type="button" label="Quitar" class="p-button-text" (click)="clearSaveDetailForm()"></button>
+    <button pButton type="button" label="Listo" severity="success"
+        (click)="isSaleDetailsVisible.set(false)"></button>
+  </ng-template>
+
 </p-dialog>

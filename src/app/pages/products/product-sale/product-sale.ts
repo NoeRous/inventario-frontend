@@ -94,6 +94,7 @@ export class ProductSale implements OnInit {
   ];
 
   isSaleDetailsVisible = signal(false);
+  typeSaleDetails = signal<'sale' | 'order'>('sale');
 
   constructor(
     private productSaleService: ProductSaleService,
@@ -244,12 +245,12 @@ export class ProductSale implements OnInit {
   }
 
   // 💾 Registrar venta
-  registerSale() {
+  registerSale(type: 'sale' | 'order') {
     if (!this.selectedClient) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Cliente requerido',
-        detail: 'Selecciona un cliente para registrar la venta',
+        detail: `Selecciona un cliente para registrar la ${type === 'sale' ? 'venta' : 'pedido'}`,
       });
       return;
     }
@@ -259,14 +260,14 @@ export class ProductSale implements OnInit {
     const total = this.total();
 
     const saleRequest = {
-      type: 'direct_sale',
-      status: 'paid',
+      type: type === 'sale' ? 'direct_sale' : 'order',
+      status: type === 'sale' ? 'paid' : 'pending',
       customerId: this.selectedClient?.id,
       subtotal: subtotal,
       discount: discount,
       total: total,
       amountPaid: total,
-      paymentMethod: 'cash',
+      paymentMethod: type === 'sale' ? 'cash' : 'qr',
       observation: this.saleDetail.observation?? null,
 
       soldBy: this.saleDetail.sold_by?? null,
@@ -297,15 +298,15 @@ export class ProductSale implements OnInit {
 
         this.messageService.add({
           severity: 'success',
-          summary: 'Venta registrada',
-          detail: 'La venta se ha registrado correctamente',
+          summary: `${type === 'sale' ? 'Venta' : 'Pedido'} registrada`,
+          detail: `La ${type === 'sale' ? 'venta' : 'pedido'} se ha registrado correctamente`,
         });
       },
       error: (error) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error al registrar venta',
-          detail: error.error?.message ?? 'Error al procesar la venta',
+          summary: `Error al registrar ${type === 'sale' ? 'venta' : 'pedido'}`,
+          detail: error.error?.message ?? `Error al procesar la ${type === 'sale' ? 'venta' : 'pedido'}`,
         });
       },
     });
@@ -349,12 +350,13 @@ export class ProductSale implements OnInit {
     });
   }
 
-  confirmSale(event: Event) {
+  confirmSale(event: Event, type: 'sale' | 'order') {
+    this.typeSaleDetails.set(type);
     if (!this.selectedClient) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Cliente requerido',
-        detail: 'Selecciona un cliente para registrar la venta',
+        detail: `Selecciona un cliente para registrar la ${type === 'sale' ? 'venta' : 'pedido'}`,
       });
       this.isSelectedClient = true;
       return;
@@ -363,16 +365,16 @@ export class ProductSale implements OnInit {
     if (this.cart().length === 0) {
       this.messageService.add({
         severity: 'info',
-        summary: 'Carrito vacío',
-        detail: 'Agrega al menos un producto para vender',
+        summary: `Carrito vacío para ${type === 'sale' ? 'vender' : 'pedir'}`,
+        detail: `Agrega al menos un producto para ${type === 'sale' ? 'vender' : 'pedir'} la ${type === 'sale' ? 'venta' : 'pedido'} correctamente`,
       });
       return;
     }
 
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: '¿Estás seguro de registrar esta venta?',
-      header: 'Confirmar Venta',
+      message: `¿Estás seguro de registrar esta ${type === 'sale' ? 'venta' : 'pedido'}?`,
+      header: `Confirmar ${type === 'sale' ? 'Venta' : 'Pedido'}`,
       icon: 'pi pi-info-circle',
       rejectLabel: 'Cancel',
       rejectButtonProps: {
@@ -381,18 +383,18 @@ export class ProductSale implements OnInit {
         outlined: true,
       },
       acceptButtonProps: {
-        label: 'Vender',
-        severity: 'danger',
+        label: type === 'sale' ? 'Vender' : 'Pedir',
+        severity: type === 'sale' ? 'danger' : 'success',
       },
 
       accept: () => {
-        this.registerSale();
+        this.registerSale(type);
       },
       reject: () => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Operación cancelada',
-          detail: 'La acción fue rechazada por el usuario',
+          summary: `Operación cancelada para ${type === 'sale' ? 'venta' : 'pedido'}`,
+          detail: `La acción fue rechazada por el usuario para la ${type === 'sale' ? 'venta' : 'pedido'} correctamente para continuar`,
         });
       },
     });

@@ -41,12 +41,15 @@ export class ProductSaleService {
 
     getOrders(): Observable<any[]> {
         const params = new HttpParams().set('type', 'order');
-    
+
         return this.http.get<any[]>(this.apiUrl, { params });
     }
 
-    //listar items 
+    //listar items
     getSaleItems(saleId: string): Observable<any> {
         return this.http.get<any>(`${this.apiUrl}/${saleId}/items`);
-      }
+    }
+    updateSaleDetail(id: string, payload: any) {
+      return this.http.put<any>(`${this.apiUrl}/${id}/detail`, payload);
+    }
 }

@@ -9,6 +9,11 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProductSaleService } from '../../../../service/ProductSaleService';
 import { DialogModule } from 'primeng/dialog';
 import { environment } from '../../../../environments/environment.prod';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TextareaModule } from 'primeng/textarea';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
 
 interface Sale {
   id: string;
@@ -27,6 +32,15 @@ interface Sale {
   paymentMethod: string;
   status: string;
   active: boolean;
+
+  observation: string;
+  soldBy: string;
+  deliveredBy: string;
+  sellerProfit: number;
+  deliveryProfit: number;
+  divinaProfit: number | null;
+  soldPaid: boolean;
+  deliveryPaid: boolean;
 }
 
 export interface SaleItem {
@@ -70,7 +84,7 @@ export interface Category {
   selector: 'app-sale-list',
   templateUrl: './sale.html',
   styleUrls: ['./sale.scss'],
-  imports: [CommonModule, TableModule, TagModule, ButtonModule, ToastModule, ConfirmDialogModule,DialogModule],
+  imports: [CommonModule,InputTextModule,InputNumberModule,ReactiveFormsModule,CheckboxModule, TextareaModule, TableModule, TagModule, ButtonModule, ToastModule, ConfirmDialogModule,DialogModule],
   providers: [MessageService, ConfirmationService],
 })
 export class SaleList implements OnInit {
@@ -85,10 +99,25 @@ export class SaleList implements OnInit {
 
   selectedSale = signal<Sale | null>(null);
   saleItems = signal<SaleItem[]>([]);
-
+  saleDetailForm!: FormGroup;
+  isSaleDetailsVisible = signal(false);
 
   ngOnInit(): void {
     this.loadSales();
+  }
+
+  constructor(
+    private fb: FormBuilder,
+  ) {
+      this.saleDetailForm = this.fb.group({
+      observation: [''],
+      sold_by: [''],
+      seller_profit: [0],
+      sold_paid: [false],
+      delivered_by: [''],
+      delivery_profit: [0],
+      delivery_paid: [false]
+    });
   }
 
   get saleList(): Sale[] {
@@ -143,7 +172,7 @@ export class SaleList implements OnInit {
     const sale = event;
     this.selectedSale.set(sale);
     this.itemsDialog = true;
-  
+
     if (sale?.id) {
       this.loadItems(sale.id);
     }
@@ -171,14 +200,71 @@ export class SaleList implements OnInit {
     if (!imagePath || !imagePath.trim()) {
       return '/assets/no-image.png';
     }
-  
+
     //  Si ya es URL completa (Cloudinary)
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
-  
+
     // Si es ruta local (/uploads)
     return `${environment.apiUrl}${imagePath}`;
   }
+
+  editSaleDetail(sale: Sale) {
+    this.saleDetailForm.patchValue({
+      observation: sale.observation,
+      sold_by: sale.soldBy,
+      seller_profit: sale.sellerProfit,
+      sold_paid: sale.soldPaid,
+      delivered_by: sale.deliveredBy,
+      delivery_profit: sale.deliveryProfit,
+      delivery_paid: sale.deliveryPaid
+    });
+
+    this.selectedSale.set(sale);
+    this.isSaleDetailsVisible.set(true);
+  }
+
+  saveSaleDetailEdit() {
+   const selectedSale = this.selectedSale();
+
+  if (!selectedSale) return;
+
+
+  const detail = this.saleDetailForm.getRawValue();
+
+  const payload = {
+    observation: detail.observation,
+    soldBy: detail.sold_by,
+    sellerProfit: detail.seller_profit,
+    soldPaid: detail.sold_paid,
+    deliveredBy: detail.delivered_by,
+    deliveryProfit: detail.delivery_profit,
+    deliveryPaid: detail.delivery_paid
+  };
+
+  this.saleService.updateSaleDetail(selectedSale.id, payload).subscribe({
+    next: (updatedSale) => {
+      this.isSaleDetailsVisible.set(false);
+      this.saleDetailForm.reset();
+      this.selectedSale.set(null);
+      this.loadSales();
+
+      this.messageService.add({
+          severity: 'success',
+          summary: `Detalles actualizados`,
+          detail: `La venta se ha actualizado correctamente`,
+      });
+
+    },
+    error: (error) => {
+       this.messageService.add({
+          severity: 'error',
+          summary: `Error al actualizar detalles`,
+          detail: error.error?.message ?? `Error al procesar la la actualizacion`,
+        });
+    }
+  });
+}
 }
 

@@ -129,12 +129,10 @@ export class ProductSale implements OnInit {
     if (!imagePath || !imagePath.trim()) {
       return '/assets/no-image.png';
     }
-  
     //  Si ya es URL completa (Cloudinary)
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
-  
     // Si es ruta local (/uploads)
     return `${environment.apiUrl}${imagePath}`;
   }

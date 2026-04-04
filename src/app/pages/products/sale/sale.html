@@ -16,7 +16,7 @@
 
     <ng-template #header>
       <tr>
-        <th>ID</th>
+        <th>Nro.</th>
         <th>Fecha</th>
         <th>Cliente</th>
         <th>Tipo</th>
@@ -26,13 +26,14 @@
         <th>Pagado</th>
         <th>Método</th>
         <th>Estado</th>
+        <th>Detalle de venta</th>
         <th>Acciones</th>
       </tr>
     </ng-template>
 
     <ng-template #body let-sale let-rowIndex="rowIndex">
       <tr class="text-sm">
-        <td>{{ sale.id | slice:0:8 }}</td>
+        <td>{{ rowIndex + 1 }}</td>
         <td>{{ sale.date | date:'short' }}</td>
         <td>{{ sale.customer?.fullName || 'Sin cliente' }}</td>
         <td>{{ sale.type }}</td>
@@ -43,6 +44,60 @@
         <td>{{ sale.paymentMethod }}</td>
         <td>
           <p-tag [value]="sale.status" [severity]="getStatusSeverity(sale.status)" class="text-xs py-1 px-2"></p-tag>
+        </td>
+        <td>
+          <div class="flex flex-column gap-1 text-sm">
+
+            @if(sale.observation) {
+              <span>
+                <strong>Obs:</strong> {{ sale.observation }}
+              </span>
+            }
+
+            @if(sale.soldBy) {
+              <span>
+                <strong>Vendido:</strong> {{ sale.soldBy }}
+                @if(sale.sellerProfit){
+                  <span>
+                  ({{ sale.sellerProfit | currency:'BOB' }})
+                  </span>
+                }
+                @if(sale.soldPaid){
+                  <i class="pi pi-check-circle text-green-500 ml-1"></i>
+
+                }
+              </span>
+            }
+            @if(sale.deliveredBy) {
+              <span>
+                <strong>Entregado:</strong> {{ sale.deliveredBy }}
+                @if(sale.deliveryProfit){
+                  <span>
+                  ({{ sale.deliveryProfit | currency:'BOB' }})
+                  </span>
+                }
+                @if(sale.deliveryPaid){
+                  <i class="pi pi-check-circle text-green-500 ml-1"></i>
+
+                }
+              </span>
+            }
+            @if(sale.divinaProfit){
+                <span>
+                  <strong>Divina:</strong> {{ sale.divinaProfit | currency:'BOB' }}
+                </span>
+            }
+          </div>
+          <div class="mt-1">
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-pencil"
+                  label="Editar"
+                  class="p-button-text p-button-sm"
+                  (click)="editSaleDetail(sale)">
+                </button>
+              </div>
         </td>
         <td class="flex gap-1 flex-wrap justify-center">
           <p-button icon="pi pi-search" [rounded]="true" [text]="true" severity="info" (onClick)="onSelectSale(sale)" />
@@ -58,7 +113,7 @@
   </p-table>
 </div>
 
-<p-dialog [(visible)]="itemsDialog" header="Detalles de venta" [modal]="true" [style]="{ width: '80vw' }">
+<p-dialog [(visible)]="itemsDialog" header="Items de venta" [modal]="true" [style]="{ width: '80vw' }">
 
   <!-- DETALLES PRINCIPALES EN COLUMNAS -->
   <div *ngIf="selectedSale() as sale" class="sale-summary" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; text-align: center; margin-bottom: 1rem; padding: 0 1rem;">
@@ -160,3 +215,59 @@
   <p-toast />
   <p-confirmdialog />
 </div>
+
+<p-dialog [visible]="isSaleDetailsVisible()" [style]="{ width: '450px' }"
+  header="Detalles de Venta" [modal]="true" (onHide)="isSaleDetailsVisible.set(false)">
+
+  <ng-template #content>
+    <form [formGroup]="saleDetailForm" class="flex flex-col gap-6">
+
+      <!-- Observación -->
+      <div>
+        <label class="block font-bold mb-2">Observación:</label>
+        <textarea pInputTextarea formControlName="observation" rows="3" class="w-full"></textarea>
+      </div>
+
+      <!-- Vendedor -->
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Vendido por:</label>
+          <input pInputText formControlName="sold_by" class="w-full" />
+        </div>
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Ganancia: </label>
+          <input pInputText type="number" formControlName="seller_profit" class="w-full" />
+        </div>
+        <div class="col-span-12 md:col-span-4">
+            <label class="block font-bold mb-2">Pagado?:  </label>
+          <p-checkbox formControlName="sold_paid" binary="true" label="Pagado"></p-checkbox>
+        </div>
+      </div>
+
+      <!-- Repartidor -->
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Entregado por:</label>
+          <input pInputText formControlName="delivered_by" class="w-full" />
+        </div>
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Ganancia: </label>
+          <input pInputText type="number" formControlName="delivery_profit" class="w-full" />
+        </div>
+        <div class="col-span-12 md:col-span-4">
+          <label class="block font-bold mb-2">Pagado?:   </label>
+          <p-checkbox formControlName="delivery_paid" binary="true" label="Pagado"></p-checkbox>
+        </div>
+      </div>
+
+    </form>
+  </ng-template>
+
+  <ng-template #footer>
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="isSaleDetailsVisible.set(false)"></button>
+    <button pButton type="button" label="Actualizar" severity="success"
+        (click)="saveSaleDetailEdit()"></button>
+  </ng-template>
+
+</p-dialog>
+

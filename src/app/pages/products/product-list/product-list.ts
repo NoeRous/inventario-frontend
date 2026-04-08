@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -61,6 +61,7 @@ export class ProductList implements OnInit {
   detailForm: FormGroup;
   selectedDetail = signal<ProductDetail | null>(null);
   isEditDetail = false;
+  showOnlyAvailable = signal(true);
 
   inventoryStates = [
     { label: 'DISPONIBLE', value: 'DISPONIBLE' },
@@ -89,7 +90,7 @@ export class ProductList implements OnInit {
       categoryId: ['', Validators.required],
       //category: [null, Validators.required],
       price: [0, Validators.required],
-      stock: [{ value: 0, disabled: true }], 
+      stock: [{ value: 0, disabled: true }],
       inventoryState: ['DISPONIBLE', Validators.required],
       image: [null],
     });
@@ -145,12 +146,12 @@ export class ProductList implements OnInit {
     if (!imagePath || !imagePath.trim()) {
       return '/assets/no-image.png';
     }
-  
+
     //  Si ya es URL completa (Cloudinary)
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
-  
+
     // Si es ruta local (/uploads)
     return `${environment.apiUrl}${imagePath}`;
   }
@@ -278,7 +279,7 @@ export class ProductList implements OnInit {
       product: this.selectedProduct()!,
     };
 
-    if (this.detailForm.invalid ) return;
+    if (this.detailForm.invalid) return;
 
     if (this.isEditDetail) {
       // ACTUALIZAR
@@ -333,39 +334,39 @@ export class ProductList implements OnInit {
   }
 
   confirmDeleteProduct(event: Event, product: Product) {
-  event.stopPropagation();
+    event.stopPropagation();
 
-  this.confirmationService.confirm({
-    target: event.target as EventTarget,
-    message: '¿Eliminar este producto?',
-    header: 'Confirmar',
-    icon: 'pi pi-exclamation-triangle',
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: '¿Eliminar este producto?',
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
 
-    accept: () => {
-      this.productService.deleteProduct(product.id).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Eliminado',
-            detail: 'Producto eliminado correctamente',
-          });
-          this.getProductsAll();
-        },
-        error: (err) => {
-          // 👇 AQUÍ capturamos el mensaje del backend
-          const backendMessage =
-            err?.error?.message || 'No se pudo eliminar el producto';
+      accept: () => {
+        this.productService.deleteProduct(product.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Eliminado',
+              detail: 'Producto eliminado correctamente',
+            });
+            this.getProductsAll();
+          },
+          error: (err) => {
+            // 👇 AQUÍ capturamos el mensaje del backend
+            const backendMessage =
+              err?.error?.message || 'No se pudo eliminar el producto';
 
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'No se pudo eliminar',
-            detail: backendMessage,
-          });
-        },
-      });
-    },
-  });
-}
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'No se pudo eliminar',
+              detail: backendMessage,
+            });
+          },
+        });
+      },
+    });
+  }
 
 
   confirmDeleteDetail(event: Event, detail: ProductDetail) {
@@ -390,5 +391,37 @@ export class ProductList implements OnInit {
         });
       },
     });
+  }
+
+  filteredDetails = computed(() => {
+    const details = this.selectedProductDetails();
+
+    if (this.showOnlyAvailable()) {
+      return details.filter(detail => detail.stock > 0);
+    }
+
+    return details;
+  });
+
+  toggleAvailableFilter() {
+    this.showOnlyAvailable.update(value => !value);
+  }
+
+  copyAvailableColors() {
+    const colors = this.selectedProductDetails()
+      .filter(detail => detail.stock > 0)
+      .map(detail => detail.color)
+      .filter((color, index, self) => self.indexOf(color) === index)
+      .join(', ');
+
+    navigator.clipboard.writeText(colors);
+
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Copiado',
+      detail: 'Colores disponibles copiados',
+    });
+
   }
 }

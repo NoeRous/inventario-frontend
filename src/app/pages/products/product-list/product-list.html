@@ -8,7 +8,7 @@
     [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos">
 
     <ng-template #caption>
-      <div class="flex justify-end mb-2">
+      <div class="flex flex-column md:flex-row justify-content-between gap-2 mb-2">
         <input pInputText type="text" (input)="dt.filterGlobal($event.target.value,'contains')"
           placeholder="Buscar..." />
         <button pButton label="Nuevo Producto" icon="pi pi-plus" class="p-button-sm" (click)="openNew()"></button>
@@ -55,7 +55,7 @@
           <p-button (onClick)="displayProductDetails(product)" icon="pi pi-search" severity="secondary" rounded />
 
           <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
-            (click)="confirmDeleteProduct($event, product)"  />
+            (click)="confirmDeleteProduct($event, product)" />
         </td>
       </tr>
     </ng-template>
@@ -83,7 +83,7 @@
         <small class="text-red-500" *ngIf="submitted && productForm.get('code')?.invalid">
           El código es requerido
         </small>
-      </div> 
+      </div>
 
       <!-- Nombre -->
       <div>
@@ -152,60 +152,83 @@
 </p-dialog>
 <p-dialog [(visible)]="detailsDialog" header="Detalles del Producto" [modal]="true" [style]="{ width: '80vw' }">
 
+
   <!-- FORMULARIO -->
   <div class="surface-50 p-4 mb-4 border-round shadow-1">
-      <form [formGroup]="detailForm">
-        <div class="grid grid-cols-12 gap-4 items-end">
+    <form [formGroup]="detailForm">
+      <div class="grid grid-cols-12 gap-4 items-end">
 
-          <div class="col-span-12 md:col-span-2">
-            <label class="block text-sm text-600 mb-1">Color</label>
-            <input pInputText formControlName="color" class="w-full"  placeholder="Ej: Rojo"/>
-             <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('color')?.invalid">
-              El color es requerido
-            </small>
-          </div>
-
-          <div class="col-span-12 md:col-span-2">
-            <label class="block text-sm text-600 mb-1">Talla</label>
-            <input pInputText formControlName="size" placeholder="Ej: M" class="w-full" />
-            <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('size')?.invalid">
-              La talla es requerida
-            </small>
-          </div>
-
-          <div class="col-span-12 md:col-span-2">
-            <label class="block text-sm text-600 mb-1">Stock</label>
-            <input pInputText type="number" formControlName="stock" class="w-full" />
-            <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('stock')?.invalid">
-              El stock es requerido
-            </small>
-          </div>
-
-          <div class="col-span-12 md:col-span-2">
-            <label class="block text-sm text-600 mb-1">Almacén</label>
-            <input pInputText formControlName="warehouse" placeholder="Principal"  class="w-full" />
-              <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('warehouse')?.invalid">
-              El almacén es requerido
-            </small>
-          </div>
-
-          <div class="col-span-12 md:col-span-4">
-            <button pButton type="button" class="w-full" [severity]="isEditDetail ? 'info' : 'success'"
-              [label]="isEditDetail ? 'Actualizar detalle' : 'Agregar detalle'"
-              [icon]="isEditDetail ? 'pi pi-check' : 'pi pi-plus'" (click)="saveDetail()">
-            </button>
-
-            @if (isEditDetail) {
-              <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary"
-                (click)="resetForm()" title="Cancelar edición" />
-            }
-          </div>
+        <div class="col-span-12 md:col-span-2">
+          <label class="block text-sm text-600 mb-1">Color</label>
+          <input pInputText formControlName="color" class="w-full" placeholder="Ej: Rojo" />
+          <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('color')?.invalid">
+            El color es requerido
+          </small>
         </div>
-      </form>
+
+        <div class="col-span-12 md:col-span-2">
+          <label class="block text-sm text-600 mb-1">Talla</label>
+          <input pInputText formControlName="size" placeholder="Ej: M" class="w-full" />
+          <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('size')?.invalid">
+            La talla es requerida
+          </small>
+        </div>
+
+        <div class="col-span-12 md:col-span-2">
+          <label class="block text-sm text-600 mb-1">Stock</label>
+          <input pInputText type="number" formControlName="stock" class="w-full" />
+          <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('stock')?.invalid">
+            El stock es requerido
+          </small>
+        </div>
+
+        <div class="col-span-12 md:col-span-2">
+          <label class="block text-sm text-600 mb-1">Almacén</label>
+          <input pInputText formControlName="warehouse" placeholder="Principal" class="w-full" />
+          <small class="text-red-500" *ngIf="submittedDetail && detailForm.get('warehouse')?.invalid">
+            El almacén es requerido
+          </small>
+        </div>
+
+        <div class="col-span-12 md:col-span-4">
+          <button pButton type="button" class="w-full" [severity]="isEditDetail ? 'info' : 'success'"
+            [label]="isEditDetail ? 'Actualizar detalle' : 'Agregar detalle'"
+            [icon]="isEditDetail ? 'pi pi-check' : 'pi pi-plus'" (click)="saveDetail()">
+          </button>
+
+          @if (isEditDetail) {
+          <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" (click)="resetForm()"
+            title="Cancelar edición" />
+          }
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-3 mb-3">
+
+    <div>
+      <span class="font-semibold text-700">
+        {{ showOnlyAvailable() ? 'Mostrando solo disponibles' : 'Mostrando todos los detalles' }}
+      </span>
+    </div>
+
+    <div class="flex flex-column sm:flex-row gap-2 w-full md:w-auto">
+      <p-button label="Copiar colores disp." icon="pi pi-copy" severity="info" outlined="true"
+        styleClass="w-full sm:w-auto" (click)="copyAvailableColors()">
+      </p-button>
+
+      <p-button [label]="showOnlyAvailable() ? 'Ver todos' : 'Ver solo disponibles'"
+        [icon]="showOnlyAvailable() ? 'pi pi-list' : 'pi pi-filter'"
+        [severity]="showOnlyAvailable() ? 'secondary' : 'success'" styleClass="w-full sm:w-auto"
+        (click)="toggleAvailableFilter()">
+      </p-button>
+    </div>
+
   </div>
 
   <!-- TABLA -->
-  <p-table [value]="selectedProductDetails()" dataKey="id" selectionMode="single" [(selection)]="selectedDetail"
+  <p-table [value]="filteredDetails()" dataKey="id" selectionMode="single" [(selection)]="selectedDetail"
     (onRowSelect)="onSelectDetail($event)" showGridlines rowHover class="p-datatable-sm">
 
     <ng-template pTemplate="header">
@@ -230,7 +253,7 @@
         <td>{{ detail.warehouse }}</td>
         <td>
           <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
-            (click)="confirmDeleteDetail($event, detail)"  />
+            (click)="confirmDeleteDetail($event, detail)" />
         </td>
       </tr>
     </ng-template>

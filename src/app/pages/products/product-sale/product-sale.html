@@ -3,13 +3,13 @@
 
 <div class="font-semibold text-xl mb-4">Ventas</div>
 
-<div class="flex flex-col md:flex-row gap-8 mt-6">
-    <div class="md:w-2/3">
+<div class="flex flex-col lg:flex-row gap-3 mt-6 w-full">
+    <div class="w-full lg:flex-[2.5]">
         <div class="card">
-            <div class="flex justify-content-between align-items-center mb-4">
-                <div class="font-semibold text-xl">Productos Disponibles</div>
+            <div class="flex flex-column sm:flex-row justify-content-between sm:items-center gap-2">
+                <div class="font-semibold text-lg">Productos Disponibles</div>
 
-                <span class="p-input-icon-left w-20rem">
+                <span class="flex gap-2 w-full sm:w-auto">
 
                     <input #filter pInputText type="text" (input)="dt.filterGlobal(filter.value, 'contains')"
                         placeholder="Buscar producto..." class="w-full" />
@@ -42,11 +42,11 @@
                         <td>{{ rowIndex + 1 }}</td>
                         <td *ngIf="rowgroup" [attr.rowspan]="rowspan" class="align-middle">
 
-                            <div class="flex items-center justify-start gap-2">
+                            <div class="flex flex-column items-center justify-start gap-1">
                                 <img [src]="getImageUrl(product.image)" [alt]="product.productName"
-                                    class="w-10 h-10 object-cover rounded-md" />
+                                    class="w-10 h-20 object-cover rounded-md" />
 
-                                <span class="font-semibold">
+                                <span class="text-sm font-medium text-center">
                                     {{ product.productName }}
                                 </span>
                             </div>
@@ -78,18 +78,17 @@
         </div>
     </div>
 
-    <div class="md:w-1/3">
+    <div class="w-full lg:flex-[1.5]">
         <div class="card p-3">
 
-            <div class="flex justify-between">
-                <div class="font-semibold text-lg mb-3">
+            <div class="flex flex-column sm:flex-row justify-content-between sm:items-center gap-2">
+                <div class="font-semibold text-lg">
                     Productos seleccionados
                 </div>
-                <div class="flex gap-2">
-                    <p-button icon="pi pi-user" label="Seleccionar Cliente" variant="text"
-                        (click)="isSelectedClient = true" />
-                    <br>
 
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <p-button icon="pi pi-user" label="Seleccionar Cliente" variant="text" styleClass="w-full sm:w-auto"
+                        (click)="isSelectedClient = true" />
                 </div>
             </div>
 
@@ -129,84 +128,100 @@
             </div>
 
             <div *ngFor="let item of cart()"
-                class="flex justify-content-between align-items-center mb-2 pb-2 border-bottom-1 text-sm">
+                class="flex flex-column sm:flex-row sm:justify-content-between sm:align-items-center gap-2 mb-2 pb-2 border-bottom-1 text-xs">
 
                 <!-- INFO PRODUCTO -->
                 <div class="flex flex-column gap-0">
-                    <span class="font-medium">
+                    <span class="font-medium text-sm">
                         {{ item.productName }}
                     </span>
-                    <small class="text-500">
+
+                    <small class="text-500 text-xs">
                         {{ item.color }} - {{ item.size }}
                     </small>
                 </div>
+
                 <!-- CANTIDAD -->
-                <p-inputNumber [(ngModel)]="item.quantity" [showButtons]="true" buttonLayout="horizontal" [min]="1"
-                    [max]="item.stock" styleClass="w-4rem" [inputStyle]="{
-                        height: '28px',
-                        fontSize: '10px',
+                <div class="w-full sm:w-8rem">
+                    <p-inputNumber [(ngModel)]="item.quantity" [showButtons]="true" buttonLayout="horizontal" [min]="1"
+                        [max]="item.stock" [inputStyle]="{
+                        height: '26px',
+                        fontSize: '11px',
                         padding: '2px 4px',
                         width: '100%'
                     }" [style]="{
-                        height: '28px'
+                        width: '100%'
                     }">
-                </p-inputNumber>
+                    </p-inputNumber>
+                </div>
+
                 <!-- PRECIO -->
-                <div class="text-right">
-                    <div class="text-sm">
-                        {{ item.price | currency:'BOB' }}
-                    </div>
-                    <div class="font-semibold text-sm">
-                        {{ item.price * item.quantity | currency:'BOB' }}
+                <div
+                    class="flex justify-content-between sm:flex-column sm:text-right align-items-center sm:align-items-end gap-2">
+                    <div>
+                        <div class="text-xs">
+                            {{ item.price | currency:'BOB' }}
+                        </div>
+
+                        <div class="font-semibold text-sm">
+                            {{ item.price * item.quantity | currency:'BOB' }}
+                        </div>
                     </div>
 
-                    <button pButton icon="pi pi-trash" severity="danger" text class="p-button-sm mt-1"
+                    <button pButton icon="pi pi-trash" severity="danger" text class="p-button-sm"
                         (click)="removeProduct(item.productDetailId)">
                     </button>
                 </div>
-
             </div>
 
             <hr class="my-2" />
-
             <!-- RESUMEN -->
-            <div class="flex justify-content-between text-sm">
+            <div class="flex justify-content-between items-center text-xs sm:text-sm">
                 <span class="text-600">Subtotal:</span>
                 <span class="font-medium">{{ subtotal() | currency:'BOB' }}</span>
             </div>
 
-            <div class="flex justify-content-between text-sm mt-2">
-                <div class="flex align-items-center gap-2">
+            <div class="flex flex-column sm:flex-row justify-content-between gap-2 text-xs sm:text-sm mt-2">
+                <div class="flex flex-column sm:flex-row sm:items-center gap-2">
                     <span class="text-600">Descuento:</span>
-                    <button pButton type="button" icon="pi pi-tag" label="Agregar" class="p-button-text p-button-sm"
-                        (click)="onOpenDiscountDialog()" [disabled]="cart().length === 0">
+
+                    <button pButton type="button" icon="pi pi-tag" label="Agregar"
+                        class="p-button-text p-button-sm w-full sm:w-auto" (click)="onOpenDiscountDialog()"
+                        [disabled]="cart().length === 0">
                     </button>
                 </div>
-                <span class="font-medium text-red-600">- {{ discountAmount() | currency:'BOB' }}</span>
+
+                <span class="font-medium text-red-600 text-right sm:text-left">
+                    - {{ discountAmount() | currency:'BOB' }}
+                </span>
             </div>
 
-            <div class="flex justify-content-between font-semibold text-base mt-3">
+            <div class="flex justify-content-between items-center font-semibold text-sm sm:text-base mt-3">
                 <span>Total:</span>
                 <span>{{ total() | currency:'BOB' }}</span>
             </div>
 
             <hr class="my-2" />
-            <!-- DETALLES DE LAS VENTAS -->
 
-            <div class="flex justify-content-between text-sm mt-2">
-                <div class="flex align-items-center gap-2">
+            <!-- DETALLES DE LAS VENTAS -->
+            <div class="flex flex-column sm:flex-row justify-content-between gap-2 text-xs sm:text-sm mt-2">
+
+                <div class="flex flex-column sm:flex-row sm:items-center gap-2">
                     <span class="text-600">Detalle de venta:</span>
-                    <button pButton type="button" icon="pi pi-file" label="Agregar" class="p-button-text p-button-sm"
-                        (click)="onOpenDetailSaleDialog()" [disabled]="cart().length === 0">
+
+                    <button pButton type="button" icon="pi pi-file" label="Agregar"
+                        class="p-button-text p-button-sm w-full sm:w-auto" (click)="onOpenDetailSaleDialog()"
+                        [disabled]="cart().length === 0">
                     </button>
                 </div>
+
                 <div *ngIf="saleDetail.observation || saleDetail.sold_by || saleDetail.delivered_by"
-                    class="surface-100 border-round p-2 text-xs flex flex-column gap-1">
-        
+                    class="surface-100 border-round p-2 text-xs flex flex-column gap-1 w-full sm:w-auto">
+
                     <span *ngIf="saleDetail.observation">
                         <strong>Obs:</strong> {{ saleDetail.observation }}
                     </span>
-        
+
                     <span *ngIf="saleDetail.sold_by">
                         <strong>Vendido por:</strong> {{ saleDetail.sold_by }}
                         <span *ngIf="saleDetail.seller_profit">
@@ -225,17 +240,16 @@
                 </div>
             </div>
 
-
             <!-- BOTÓN -->
-             <div class="flex gap-2 mt-2">
-                <button pButton label="Registrar Pedido" class="w-full mt-2 p-button-sm" 
-                [disabled]="cart().length === 0 || !selectedClient" (click)="confirmSale($event, 'order')">
+            <div class="flex gap-2 mt-2">
+                <button pButton label="Registrar Pedido" class="w-full mt-2 p-button-sm"
+                    [disabled]="cart().length === 0 || !selectedClient" (click)="confirmSale($event, 'order')">
                 </button>
                 <button pButton label="Registrar Venta" class="w-full mt-2 p-button-sm" severity="success"
                     [disabled]="cart().length === 0 || !selectedClient" (click)="confirmSale($event, 'sale')">
                 </button>
-             </div>
-           
+            </div>
+
 
         </div>
     </div>
@@ -302,8 +316,7 @@
 </p-drawer>
 
 <p-dialog header="Descuento" [visible]="isDiscountDialogVisible()" (visibleChange)="isDiscountDialogVisible.set($event)"
-    [modal]="true" [closable]="true"
-    [style]="{ width: '40rem' }">
+    [modal]="true" [closable]="true" [style]="{ width: '40rem', maxWidth: '95vw' }">
     <div class="flex flex-column gap-3">
         <div class="flex gap-2 align-items-center">
             <p-select [options]="discountModeOptions" [ngModel]="discountMode()"
@@ -312,8 +325,9 @@
 
             <p-inputNumber [ngModel]="discountValue()" (ngModelChange)="discountValue.set($event)" [min]="0"
                 [max]="discountMode() === 'percent' ? 100 : subtotal()"
-                [suffix]="discountMode() === 'percent' ? '%' : ''" [mode]="discountMode() === 'percent' ? 'decimal' : 'currency'"
-                currency="BOB" locale="es-BO" class="w-full">
+                [suffix]="discountMode() === 'percent' ? '%' : ''"
+                [mode]="discountMode() === 'percent' ? 'decimal' : 'currency'" currency="BOB" locale="es-BO"
+                class="w-full">
             </p-inputNumber>
         </div>
         <br>
@@ -331,57 +345,58 @@
 </p-dialog>
 
 
-<p-dialog [visible]="isSaleDetailsVisible()" [style]="{ width: '450px' }" 
-  header="Detalles de {{ typeSaleDetails() === 'sale' ? 'Venta' : 'Pedido' }}" [modal]="true" (onHide)="isSaleDetailsVisible.set(false)">
+<p-dialog [visible]="isSaleDetailsVisible()" [style]="{ width: '40rem', maxWidth: '95vw' }"
+    header="Detalles de {{ typeSaleDetails() === 'sale' ? 'Venta' : 'Pedido' }}" [modal]="true"
+    (onHide)="isSaleDetailsVisible.set(false)">
 
-  <ng-template #content>
-    <form [formGroup]="saleDetailForm" class="flex flex-col gap-6">
+    <ng-template #content>
+        <form [formGroup]="saleDetailForm" class="flex flex-col gap-6">
 
-      <!-- Observación -->
-      <div>
-        <label class="block font-bold mb-2">Observación:</label>
-        <textarea pInputTextarea formControlName="observation" rows="3" class="w-full"></textarea>
-      </div>
+            <!-- Observación -->
+            <div>
+                <label class="block font-bold mb-2">Observación:</label>
+                <textarea pInputTextarea formControlName="observation" rows="3" class="w-full"></textarea>
+            </div>
 
-      <!-- Vendedor -->
-      <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-12 md:col-span-4">
-          <label class="block font-bold mb-2">Vendido por:</label>
-          <input pInputText formControlName="sold_by" class="w-full" />
-        </div>
-        <div class="col-span-12 md:col-span-4">
-          <label class="block font-bold mb-2">Ganancia: </label>
-          <input pInputText type="number" formControlName="seller_profit" class="w-full" />
-        </div>
-        <div class="col-span-12 md:col-span-4">
-            <label class="block font-bold mb-2">Pagado?:  </label>
-          <p-checkbox formControlName="sold_paid" binary="true" label="Pagado"></p-checkbox>
-        </div>
-      </div>
+            <!-- Vendedor -->
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-12 md:col-span-4">
+                    <label class="block font-bold mb-2">Vendido por:</label>
+                    <input pInputText formControlName="sold_by" class="w-full" />
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                    <label class="block font-bold mb-2">Ganancia: </label>
+                    <input pInputText type="number" formControlName="seller_profit" class="w-full" />
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                    <label class="block font-bold mb-2">Pagado?: </label>
+                    <p-checkbox formControlName="sold_paid" binary="true" label="Pagado"></p-checkbox>
+                </div>
+            </div>
 
-      <!-- Repartidor -->
-      <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-12 md:col-span-4">
-          <label class="block font-bold mb-2">Entregado por:</label>
-          <input pInputText formControlName="delivered_by" class="w-full" />
-        </div>
-        <div class="col-span-12 md:col-span-4">
-          <label class="block font-bold mb-2">Ganancia: </label>
-          <input pInputText type="number" formControlName="delivery_profit" class="w-full" />
-        </div>
-        <div class="col-span-12 md:col-span-4">
-          <label class="block font-bold mb-2">Pagado?:   </label>
-          <p-checkbox formControlName="delivery_paid" binary="true" label="Pagado"></p-checkbox>
-        </div>
-      </div>
+            <!-- Repartidor -->
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-12 md:col-span-4">
+                    <label class="block font-bold mb-2">Entregado por:</label>
+                    <input pInputText formControlName="delivered_by" class="w-full" />
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                    <label class="block font-bold mb-2">Ganancia: </label>
+                    <input pInputText type="number" formControlName="delivery_profit" class="w-full" />
+                </div>
+                <div class="col-span-12 md:col-span-4">
+                    <label class="block font-bold mb-2">Pagado?: </label>
+                    <p-checkbox formControlName="delivery_paid" binary="true" label="Pagado"></p-checkbox>
+                </div>
+            </div>
 
-    </form>
-  </ng-template>
+        </form>
+    </ng-template>
 
-  <ng-template #footer>
-    <button pButton type="button" label="Quitar" class="p-button-text" (click)="clearSaveDetailForm()"></button>
-    <button pButton type="button" label="Listo" severity="success"
-        (click)="isSaleDetailsVisible.set(false)"></button>
-  </ng-template>
+    <ng-template #footer>
+        <button pButton type="button" label="Quitar" class="p-button-text" (click)="clearSaveDetailForm()"></button>
+        <button pButton type="button" label="Listo" severity="success"
+            (click)="isSaleDetailsVisible.set(false)"></button>
+    </ng-template>
 
 </p-dialog>

@@ -12,7 +12,7 @@ import { AuthService } from '../../../auth/auth.service';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  username = '';
+  email = '';
   password = '';
   loading = false;
   error: string | null = null;
@@ -22,22 +22,20 @@ export class LoginComponent {
     private readonly router: Router,
   ) {}
 
-  async onSubmit() {
+  onSubmit() {
     this.error = null;
     this.loading = true;
 
-    try {
-      const ok = this.authService.login(this.username, this.password);
-
-      if (!ok) {
-        this.error = 'Usuario o contraseña incorrectos.';
-        return;
-      }
-
-      await this.router.navigateByUrl('/');
-    } finally {
-      this.loading = false;
-    }
+    this.authService.login(this.email, this.password).subscribe({
+      next: () => {
+        this.router.navigateByUrl('/');
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Usuario o contraseña incorrectos.';
+      },
+      complete: () => {
+        this.loading = false;
+      },
+    });
   }
 }
-

@@ -22,15 +22,15 @@
 
       <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form">
         <div class="form-group">
-          <label for="username">Usuario</label>
+          <label for="email">Email</label>
           <input
-            id="username"
-            type="text"
-            name="username"
-            [(ngModel)]="username"
+            id="email"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
             required
-            autocomplete="username"
-            placeholder="Ingresa tu usuario"
+            autocomplete="email"
+            placeholder="Ingresa tu email"
           />
         </div>
 
